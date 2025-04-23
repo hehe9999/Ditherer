@@ -1,7 +1,8 @@
 from tkinter import *
 from tkinter import filedialog, ttk
 from PIL import Image, ImageTk
-from Ditherer import apply_bayer_dithering
+from Ditherer import *
+
 
 # Create window
 window = Tk()
@@ -14,6 +15,11 @@ window.geometry("400x600")
 # Load image button frame
 load_button_frame = Frame(window, height=50)
 load_button_frame.place(relx=0.5, rely=0.1, anchor="center")
+
+# Grayscale checkbox frame
+grayscale_frame = Frame(window)
+grayscale_frame.place(relx=0.5, rely=0.8, relwidth=0.2, relheight=0.1, anchor="center")
+
 
 # Export buttons frame
 export_frame = Frame(window)
@@ -105,6 +111,11 @@ window.bind("<Configure>", on_resize)
 load_image_button = Button(load_button_frame, text="Load Image", command=load_image)
 load_image_button.pack(pady=10)
 
+# Grayscale checkbox
+grayscale_var = BooleanVar()
+grayscale_checkbox = Checkbutton(grayscale_frame, text="Grayscale", variable=grayscale_var)
+grayscale_checkbox.pack()
+
 # Export buttons
 export_png_button = Button(export_frame, text="Export PNG", command=lambda: export_image("PNG"))
 export_png_button.pack(side=RIGHT, expand=True)
@@ -133,7 +144,10 @@ def export_image(format):
     progress_var.set(10)
     
     downscale = downscale_factor.get()
-    dithered = apply_bayer_dithering(loaded_image, downscale)
+    if grayscale_var.get():
+        dithered = apply_bayer_dithering(loaded_image, downscale)
+    else:
+         dithered = apply_rgbbayer_dithering(loaded_image, downscale)
 
     progress_var.set(50)
 
