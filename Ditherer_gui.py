@@ -1,10 +1,10 @@
-import tkinter as tk
+from tkinter import *
 from tkinter import filedialog, ttk
 from PIL import Image, ImageTk
 from Ditherer import apply_bayer_dithering
 
 # Create window
-window = tk.Tk()
+window = Tk()
 window.title("Ditherer")
 window.geometry("400x600")
 
@@ -12,31 +12,31 @@ window.geometry("400x600")
 #Layout Frames#
 ###############
 # Load image button frame
-load_button_frame = tk.Frame(window, height=50)
+load_button_frame = Frame(window, height=50)
 load_button_frame.place(relx=0.5, rely=0.1, anchor="center")
 
 # Export buttons frame
-export_frame = tk.Frame(window)
+export_frame = Frame(window)
 export_frame.place(relx=0.5, rely=0.85, relwidth=0.6, anchor="center")
 
 # Image frame
-image_frame = tk.Frame(window)
+image_frame = Frame(window)
 image_frame.place(relx=0.5, rely=0.35, relwidth=0.8, relheight=0.4, anchor="center")
 image_frame.pack_propagate(False)
 
 # Slider frame
-downscale_factor = tk.IntVar(value=2)
-slider_frame = tk.Frame(window)
+downscale_factor = IntVar(value=2)
+slider_frame = Frame(window)
 slider_frame.place(relx=0.5, rely=0.65, relwidth=0.7, relheight=0.1, anchor='center')
 
 ###############
 
 # Label to display image
-image_label = tk.Label(image_frame, bg="gray")
-image_label.pack(fill=tk.BOTH, expand=True)
+image_label = Label(image_frame, bg="gray")
+image_label.pack(fill=BOTH, expand=True)
 
 # Label to display Slider
-slider_label = tk.Label(slider_frame, text= "Downscale Factor:", anchor="w", justify="left")
+slider_label = Label(slider_frame, text= "Downscale Factor:", anchor="w", justify="left")
 slider_label.pack(anchor="w")
 
 # Store image to use globally
@@ -102,25 +102,25 @@ window.bind("<Configure>", on_resize)
 # Widgets #
 ###########
 # Load button
-load_image_button = tk.Button(load_button_frame, text="Load Image", command=load_image)
+load_image_button = Button(load_button_frame, text="Load Image", command=load_image)
 load_image_button.pack(pady=10)
 
 # Export buttons
-export_png_button = tk.Button(export_frame, text="Export PNG", command=lambda: export_image("PNG"))
-export_png_button.pack(side=tk.RIGHT, expand=True)
+export_png_button = Button(export_frame, text="Export PNG", command=lambda: export_image("PNG"))
+export_png_button.pack(side=RIGHT, expand=True)
 
-export_jpg_button = tk.Button(export_frame, text="Export JPG", command=lambda: export_image("JPEG"))
-export_jpg_button.pack(side=tk.LEFT, expand=True)
+export_jpg_button = Button(export_frame, text="Export JPG", command=lambda: export_image("JPEG"))
+export_jpg_button.pack(side=LEFT, expand=True)
 
 # Downscale Slider
-downscale_slider = tk.Scale(
-    slider_frame, from_=1, to=12, orient=tk.HORIZONTAL,
+downscale_slider = Scale(
+    slider_frame, from_=1, to=12, orient=HORIZONTAL,
     variable=downscale_factor
 )
-downscale_slider.pack (fill=tk.X, expand=True)
+downscale_slider.pack (fill=X, expand=True)
 
 # Progress bar
-progress_var = tk.DoubleVar()
+progress_var = DoubleVar()
 progress_bar = ttk.Progressbar(window, variable=progress_var, maximum=100)
 progress_bar.place(relx=0.5, rely=0.95, relwidth=0.9, anchor="center")
 ###########
