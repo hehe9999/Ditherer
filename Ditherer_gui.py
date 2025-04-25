@@ -173,7 +173,7 @@ def export_image(format):
         return
     
     progress_var.set(10)
-    
+    print(loaded_image.mode)
     if dropdown_submenu.get() == '2x2 Matrix':
         matrix_size = 2
     elif dropdown_submenu.get() == '4x4 Matrix':
