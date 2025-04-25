@@ -13,13 +13,19 @@ window.geometry("400x600")
 #Layout Frames#
 ###############
 # Load image button frame
-load_button_frame = Frame(window, height=50)
-load_button_frame.place(relx=0.5, rely=0.1, anchor="center")
+load_button_frame = Frame(window)
+load_button_frame.place(relx=0.5, rely=0.05, anchor="center")
 
 # Grayscale checkbox frame
 grayscale_frame = Frame(window)
 grayscale_frame.place(relx=0.5, rely=0.8, relwidth=0.2, relheight=0.1, anchor="center")
 
+# Algo dropdown frame
+dropdown_frame = Frame(window)
+dropdown_frame.place(relx=0.5, rely=0.6, relwidth=0.4, relheight=0.05, anchor="center")
+# Algo submenu dropdown frame
+submenu_dropdown_frame = Frame(window)
+submenu_dropdown_frame.place(relx=0.5, rely=0.64, relwidth=0.4, relheight=0.05, anchor="center")
 
 # Export buttons frame
 export_frame = Frame(window)
@@ -27,13 +33,13 @@ export_frame.place(relx=0.5, rely=0.85, relwidth=0.6, anchor="center")
 
 # Image frame
 image_frame = Frame(window)
-image_frame.place(relx=0.5, rely=0.35, relwidth=0.8, relheight=0.4, anchor="center")
+image_frame.place(relx=0.5, rely=0.3, relwidth=0.8, relheight=0.4, anchor="center")
 image_frame.pack_propagate(False)
 
 # Slider frame
 downscale_factor = IntVar(value=2)
 slider_frame = Frame(window)
-slider_frame.place(relx=0.5, rely=0.65, relwidth=0.7, relheight=0.1, anchor='center')
+slider_frame.place(relx=0.5, rely=0.7, relwidth=0.7, relheight=0.1, anchor='center')
 
 ###############
 
@@ -44,6 +50,9 @@ image_label.pack(fill=BOTH, expand=True)
 # Label to display Slider
 slider_label = Label(slider_frame, text= "Downscale Factor:", anchor="w", justify="left")
 slider_label.pack(anchor="w")
+
+# Algorithm dropdown label
+algo_label = Label(dropdown_frame, text= 'Dithering Algorithm', anchor="w")
 
 # Store image to use globally
 loaded_image = None
@@ -116,6 +125,28 @@ grayscale_var = BooleanVar()
 grayscale_checkbox = Checkbutton(grayscale_frame, text="Grayscale", variable=grayscale_var)
 grayscale_checkbox.pack()
 
+# Algorithm dropdown
+options_list = ("Bayer", "Floyd-Steinberg")
+selected_option = StringVar(value=options_list[0]) 
+dropdown = ttk.Combobox(dropdown_frame, textvariable=selected_option)
+dropdown['values'] = options_list
+dropdown['state'] = 'readonly'
+dropdown.pack()
+
+# Algo dropdown submenu
+submenu_options_list = ("2x2 Matrix", "4x4 Matrix", "8x8 Matrix")
+submenu_selected_option = StringVar(value=submenu_options_list[0])
+dropdown_submenu = ttk.Combobox(submenu_dropdown_frame, textvariable=submenu_selected_option)
+dropdown_submenu['values'] = submenu_options_list
+dropdown_submenu['state'] = 'readonly'
+def show_submenu(*args):
+    if dropdown.get() == 'Bayer':
+        dropdown_submenu.pack()
+    else:
+        dropdown_submenu.pack_forget()
+dropdown.bind('<<ComboboxSelected>>', show_submenu)
+show_submenu()
+
 # Export buttons
 export_png_button = Button(export_frame, text="Export PNG", command=lambda: export_image("PNG"))
 export_png_button.pack(side=RIGHT, expand=True)
@@ -136,19 +167,32 @@ progress_bar = ttk.Progressbar(window, variable=progress_var, maximum=100)
 progress_bar.place(relx=0.5, rely=0.95, relwidth=0.9, anchor="center")
 ###########
 
-# Exporter
+# Exporter, matrix size handler, and algorithm applicator
 def export_image(format):
     if loaded_image is None:
         return
     
     progress_var.set(10)
     
-    downscale = downscale_factor.get()
-    if grayscale_var.get():
-        dithered = apply_bayer_dithering(loaded_image, downscale)
-    else:
-         dithered = apply_rgbbayer_dithering(loaded_image, downscale)
+    if dropdown_submenu.get() == '2x2 Matrix':
+        matrix_size = 2
+    elif dropdown_submenu.get() == '4x4 Matrix':
+        matrix_size = 4
+    elif dropdown_submenu.get() == '8x8 Matrix':
+        matrix_size = 8
 
+    downscale = downscale_factor.get()
+    if grayscale_var.get() and dropdown.get() == 'Bayer':
+        grayscale = apply_grayscale(loaded_image)
+        dithered = apply_bayer_dithering(grayscale, downscale, matrix_size)
+    elif dropdown.get() == 'Bayer':
+         dithered = apply_bayer_dithering(loaded_image, downscale, matrix_size)
+    elif dropdown.get() =='Floyd-Steinberg' and grayscale_var.get():
+        grayscale = apply_grayscale(loaded_image)
+        dithered = fs_dither(grayscale, downscale)
+    elif dropdown.get() == 'Floyd-Steinberg':
+        dithered = fs_dither(loaded_image, downscale)
+    
     progress_var.set(50)
 
     ext = format.lower()
