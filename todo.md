@@ -1,7 +1,7 @@
 # Todo List:
-- [ ] Add larger Bayer matrices
+- [ ] Add 16x16 Bayer matrix
 - [ ] Improve handling of Bayer matrix size selection
-- [ ] Handle input modes that aren't L or RGB by converting to RGB mode.
+- [ ] Handle input modes that aren't L or RGB
 - [ ] Add Atkinson dithering
 - [ ] Add nested sliders for changing Floyd-Steinberg dithering weights
 - [ ] Add live preview
