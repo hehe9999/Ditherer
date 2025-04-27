@@ -1,9 +1,10 @@
 # Todo List:
-- [ ] Add 16x16 Bayer matrix
-- [ ] Improve handling of Bayer matrix size selection
+- [x] Add 16x16 Bayer matrix
+- [x] Improve handling of Bayer matrix size selection
+- [x] Add nested sliders for changing Floyd-Steinberg dithering weights
+- [ ] Add "Reset Weights" button for Floyd-Steinberg nested sliders
 - [ ] Handle input modes that aren't L or RGB
 - [ ] Add Atkinson dithering
-- [ ] Add nested sliders for changing Floyd-Steinberg dithering weights
 - [ ] Add live preview
 - [ ] Add processing time display (ex: Image took 5.92s to process!)
 - [ ] (Maybe) Add video handling with audio separation and merging when exporting
