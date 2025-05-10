@@ -374,8 +374,6 @@ def export_media(format):
                 dithered = fs_dither(loaded_image, downscale, slider_values[0], slider_values[1], slider_values[2], slider_values[3])
         
             progress_var.set(50)
-            width, height = loaded_image.size
-            dithered.resize(width, height)
        
 
             ext = format.lower()
