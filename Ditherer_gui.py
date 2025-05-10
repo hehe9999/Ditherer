@@ -1,8 +1,15 @@
 from tkinter import *
-from tkinter import filedialog, ttk
+from tkinter import filedialog, ttk, messagebox
 from PIL import Image, ImageTk
 from Ditherer import *
-
+from dataclasses import dataclass
+import os
+import cv2
+import subprocess
+import tempfile
+import shutil
+import time
+import threading
 
 # Create window
 window = Tk()
@@ -65,21 +72,49 @@ algo_label.pack()
 algo_submenulabel_frame = Frame(window)
 algo_submenulabel_frame.place(relx=0.5, rely=0.59, relwidth=0.3, relheight=0.03, anchor="center")
 
-# Store image to use globally
+# Global variables and media dataclass
 loaded_image = None
 image_tk = None
 resize_after_id = None
 prev_size = None
+@dataclass
+class MediaState:
+    extension: str = ""
+    frame_rate: float = 0.0
+    is_video: bool = False
+    total_frames: int = 0
+    cap: cv2.VideoCapture = None
+    path: str = ""
 
-# When 'Load Image' is clicked
-def load_image():
-    global loaded_image, image_tk
-    path = filedialog.askopenfilename(filetypes=[("Image Files","*.png; *.jpg; *.jpeg")])
-    
-    # If image is selected
+media_state = MediaState()
+
+# When 'Load Media' is clicked
+def load_media():
+    global loaded_image, image_tk, cap
+    path = filedialog.askopenfilename(filetypes=[("Media Files","*.png; *.jpg; *.jpeg; *.mp4; *.mkv, *.webm")])
+    image_extensions = ['.png', '.jpg', '.jpeg']
+    video_extensions = ['.mkv', '.mp4', '.webm']
     if path:
-        loaded_image = Image.open(path)
-        update_image()
+        ext = os.path.splitext(path)[1]
+        if ext in image_extensions:
+            loaded_image = Image.open(path)
+            update_image()
+            export_buttons()
+        elif ext in video_extensions:
+            media_state.is_video = True
+            media_state.path = path
+            cap = cv2.VideoCapture(path)
+            media_state.cap = cap
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            media_state.frame_rate = fps
+            media_state.total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            media_state.extension = ext
+            ret, frame = cap.read()
+            loaded_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            update_image()
+            export_buttons()
+        else:
+            messagebox.showerror("Unsupported File Type")
 
 # Scale Image with window size
 def update_image():
@@ -128,8 +163,8 @@ window.bind("<Configure>", on_resize)
 # Widgets #
 ###########
 # Load button
-load_image_button = Button(load_button_frame, text="Load Image", command=load_image)
-load_image_button.pack(pady=10)
+load_media_button = Button(load_button_frame, text="Load Media", command=load_media)
+load_media_button.pack(pady=10)
 
 # Grayscale checkbox
 grayscale_var = BooleanVar()
@@ -146,7 +181,7 @@ dropdown.pack()
 
 dropdown_submenulabel = Label(algo_submenulabel_frame, anchor="w")
 
-# Algo submenu
+# Algo submenus
     # Bayer submenu
 submenu_options_list = ("2x2", "4x4", "8x8", "16x16")
 submenu_selected_option = StringVar(value=submenu_options_list[0])
@@ -182,11 +217,18 @@ def show_submenu(*args):
 dropdown.bind('<<ComboboxSelected>>', show_submenu)
 show_submenu()
 # Export buttons
-export_png_button = Button(export_frame, text="Export PNG", command=lambda: export_image("PNG"))
-export_png_button.pack(side=RIGHT, expand=True)
-
-export_jpg_button = Button(export_frame, text="Export JPG", command=lambda: export_image("JPEG"))
-export_jpg_button.pack(side=LEFT, expand=True)
+export_png_button = Button(export_frame, text="Export PNG", command=lambda: export_media("PNG"))
+export_jpg_button = Button(export_frame, text="Export JPG", command=lambda: export_media("JPEG"))
+export_video_button = Button(export_frame, text = "Export Video", command=lambda: export_media("none"))
+def export_buttons(*args):
+    if media_state.is_video == True:
+        export_jpg_button.pack_forget()
+        export_png_button.pack_forget()
+        export_video_button.pack(side=TOP, expand=True)
+    else:
+        export_video_button.pack_forget()
+        export_png_button.pack(side=RIGHT, expand=True)
+        export_jpg_button.pack(side=LEFT, expand=True)
 
 # Downscale Slider
 downscale_slider = Scale(
@@ -201,7 +243,7 @@ progress_bar = ttk.Progressbar(window, variable=progress_var, maximum=100)
 progress_bar.place(relx=0.5, rely=0.97, relwidth=0.9, anchor="center")
 
 # Exporter, matrix size handler, and algorithm applicator
-def export_image(format):
+def export_media(format):
     if loaded_image is None:
         return
     
@@ -218,27 +260,130 @@ def export_image(format):
             matrix_size = 16
 
     downscale = downscale_factor.get()
-    if grayscale_var.get() and dropdown.get() == 'Bayer':
-        grayscale = apply_grayscale(loaded_image)
-        dithered = apply_bayer_dithering(grayscale, downscale, matrix_size)
-    elif dropdown.get() == 'Bayer':
-         dithered = apply_bayer_dithering(loaded_image, downscale, matrix_size)
-    elif dropdown.get() =='Floyd-Steinberg' and grayscale_var.get():
-        grayscale = apply_grayscale(loaded_image)
-        slider_values = [slide.get() for slide in sliders]
-        dithered = fs_dither(grayscale, downscale, slider_values[0], slider_values[1], slider_values[2], slider_values[3])
-    elif dropdown.get() == 'Floyd-Steinberg':
-        slider_values = [slide.get() for slide in sliders]
-        dithered = fs_dither(loaded_image, downscale, slider_values[0], slider_values[1], slider_values[2], slider_values[3])
-    
-    progress_var.set(50)
+    if media_state.is_video:
+        video_output_path = filedialog.asksaveasfilename(defaultextension=f".{media_state.extension}",
+                                                        filetypes=[(f"({media_state.extension}) files", f"*{media_state.extension}")])
 
-    ext = format.lower()
-    file_path = filedialog.asksaveasfilename(defaultextension=f".{ext}", filetypes=[(f"{format} files", f"*.{ext}")])
-    if file_path:
-        dithered.save(file_path, format=format)
+        if video_output_path:
+            fps = media_state.frame_rate
+            width = int(media_state.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(media_state.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    progress_var.set(100)
+            # Create temporary directory for compressed frames
+            temp_dir = tempfile.mkdtemp()
+            print(temp_dir)
+            frame_count = 0
+
+            # Reset video capture position
+            media_state.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            ret, frame = media_state.cap.read()
+
+            # Start measuring time
+            total_start_time = time.time()
+
+            while ret:
+                # Start timing frame processing
+                frame_start_time = time.time()
+
+                rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                img_pil = Image.fromarray(rgb_frame)
+
+                # Apply dithering
+                if dropdown.get() == 'Bayer':
+                    if grayscale_var.get():
+                        grayscale = apply_grayscale(img_pil)
+                        dithered = apply_bayer_dithering(grayscale, downscale, matrix_size)
+                        dithered = dithered.convert("RGB")
+                    else:
+                        dithered = apply_bayer_dithering(img_pil, downscale, matrix_size)
+
+                elif dropdown.get() == 'Floyd-Steinberg':
+                    slider_values = [slide.get() for slide in sliders]
+                    if grayscale_var.get():
+                        grayscale = apply_grayscale(img_pil)
+                        dithered = fs_dither(grayscale, downscale, *slider_values)
+                        dithered = dithered.convert("RGB")
+                    else:
+                        dithered = fs_dither(img_pil, downscale, *slider_values)
+
+                # Save frame as compressed PNG
+                frame_path = os.path.join(temp_dir, f"frame_{frame_count:04d}.png")
+                dithered.save(frame_path, format="PNG", optimize=True)
+
+                frame_count += 1
+                progress_var.set(int((frame_count / media_state.total_frames) * 100))
+
+                # Calculate and print time for this frame
+                frame_end_time = time.time()
+                frame_process_time = frame_end_time - frame_start_time
+                print(f"Frame {frame_count} processed in {frame_process_time:.4f} seconds")
+
+                ret, frame = media_state.cap.read()
+
+            # Total time for processing all frames
+            total_end_time = time.time()
+            total_process_time = total_end_time - total_start_time
+            print(f"Total time to process {frame_count} frames: {total_process_time:.4f} seconds")
+
+            # FFmpeg commands
+            if media_state.extension == ".webm":
+                audio_codec = "libopus"
+            else:
+                audio_codec = "aac"
+            ffmpeg_cmd = [
+                'ffmpeg',
+                '-y',
+                '-framerate', str(fps),
+                '-i', os.path.join(temp_dir, 'frame_%04d.png'),
+                '-i', media_state.path,
+                '-shortest',
+                '-c:v', 'libsvtav1',
+                '-preset', '6',
+                '-crf', '63',
+                '-pix_fmt', 'yuv420p',
+                '-c:a', audio_codec,
+                '-b:a', '192k',
+                '-movflags', 'faststart',
+                video_output_path
+            ]
+
+            # Run FFmpeg
+            subprocess.run(ffmpeg_cmd)
+
+            # Cleanup
+            shutil.rmtree(temp_dir)
+
+
+
+
+
+
+
+    else: # If not video
+            if grayscale_var.get() and dropdown.get() == 'Bayer':
+                grayscale = apply_grayscale(loaded_image)
+                dithered = apply_bayer_dithering(grayscale, downscale, matrix_size)
+            elif dropdown.get() == 'Bayer':
+                dithered = apply_bayer_dithering(loaded_image, downscale, matrix_size)
+            elif dropdown.get() =='Floyd-Steinberg' and grayscale_var.get():
+                grayscale = apply_grayscale(loaded_image)
+                slider_values = [slide.get() for slide in sliders]
+                dithered = fs_dither(grayscale, downscale, slider_values[0], slider_values[1], slider_values[2], slider_values[3])
+            elif dropdown.get() == 'Floyd-Steinberg':
+                slider_values = [slide.get() for slide in sliders]
+                dithered = fs_dither(loaded_image, downscale, slider_values[0], slider_values[1], slider_values[2], slider_values[3])
+        
+            progress_var.set(50)
+            width, height = loaded_image.size
+            dithered.resize(width, height)
+       
+
+            ext = format.lower()
+            file_path = filedialog.asksaveasfilename(defaultextension=f".{ext}", filetypes=[(f"{format} files", f"*.{ext}")])
+            if file_path:
+                dithered.save(file_path, format=format)
+
+            progress_var.set(100)
     window.update_idletasks
 
     window.after(500, lambda: progress_var.set(0))
