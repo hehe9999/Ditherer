@@ -7,6 +7,7 @@
 - [x] Cache tiled Bayer matrix using lru_cache so it can be reused (negligible-huge speedup depending on matrix and image size)
 - [x] Perform JIT compilation using numba for Floyd-Steinberg dithering function (50x-100x speedup)
 - [x] Perform JIT compilation using numba for Bayer Dithering function (2x-10x speedup for large videos)
+- [x] Add dev branch for more updated commits
 - [ ] Add "Reset Weights" button for Floyd-Steinberg weights
 - [ ] Handle input modes that aren't 'L' or 'RGB'
 - [ ] Add Atkinson dithering
@@ -24,7 +25,6 @@
 - [ ] Run export function on a separate thread so the UI doesn't freeze
 - [ ] Clean up Ditherer_gui.py for better readability
 - [ ] Drag and drop functionality
-- [ ] Add dev branch for more updated commits
 - [ ] Optimize optimize optimize!
 
 

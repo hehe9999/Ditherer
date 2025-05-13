@@ -10,6 +10,7 @@ import tempfile
 import shutil
 import time
 import threading
+import math
 
 # Create window
 window = Tk()
@@ -261,14 +262,11 @@ def export_media(format):
 
     downscale = downscale_factor.get()
     if media_state.is_video:
-        video_output_path = filedialog.asksaveasfilename(defaultextension=f".{media_state.extension}",
-                                                        filetypes=[(f"({media_state.extension}) files", f"*{media_state.extension}")])
+        video_output_path = filedialog.asksaveasfilename(defaultextension=f".webm",
+                                                        filetypes=[(f"(.webm) files", f"*.webm")])
 
         if video_output_path:
             fps = media_state.frame_rate
-            width = int(media_state.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            height = int(media_state.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
             # Create temporary directory for compressed frames
             temp_dir = tempfile.mkdtemp()
             print(temp_dir)
@@ -325,35 +323,75 @@ def export_media(format):
             total_process_time = total_end_time - total_start_time
             print(f"Total time to process {frame_count} frames: {total_process_time:.4f} seconds")
 
-            # FFmpeg commands
-            if media_state.extension == ".webm":
-                audio_codec = "libopus"
-            else:
-                audio_codec = "aac"
-            ffmpeg_cmd = [
-                'ffmpeg',
-                '-y',
+
+            # Estimate bitrate using entropy
+            def calculate_image_entropy(image):
+                grayscale = image.convert("L")
+                histogram = grayscale.histogram()
+                total = sum(histogram)
+                entropy = -sum((count / total) * math.log2(count / total)
+                            for count in histogram if count > 0)
+                return entropy
+
+            entropy_values = []
+            for i in range(min(5, frame_count)):
+                img = Image.open(os.path.join(temp_dir, f"frame_{i:04d}.png"))
+                entropy_values.append(calculate_image_entropy(img))
+            avg_entropy = sum(entropy_values) / len(entropy_values)
+            bitrate_kbps = max(200, int(avg_entropy * 400))  # Tune scale as needed
+            bitrate = f"{bitrate_kbps}k"
+            print(f"Average entropy: {avg_entropy}")
+            print(f"Estimated bitrate: {bitrate}")
+
+            # Two-pass VP9 encoding with passlogfile
+            passlogfile = os.path.join(temp_dir, "ffmpeg2pass")
+            null_output = os.path.join(temp_dir, "null.webm")  # dummy first pass output
+
+            first_pass = [
+                'ffmpeg', '-y',
+                '-framerate', str(fps),
+                '-i', os.path.join(temp_dir, 'frame_%04d.png'),
+                '-c:v', 'libvpx-vp9',
+                '-b:v', bitrate,
+                '-pass', '1',
+                '-passlogfile', passlogfile,
+                '-an',
+                '-f', 'webm',
+                null_output
+            ]
+
+            second_pass = [
+                'ffmpeg', '-y',
                 '-framerate', str(fps),
                 '-i', os.path.join(temp_dir, 'frame_%04d.png'),
                 '-i', media_state.path,
                 '-shortest',
-                '-c:v', 'libsvtav1',
-                '-preset', '6',
-                '-crf', '63',
+                '-c:v', 'libvpx-vp9',
+                '-b:v', bitrate,
+                '-pass', '2',
+                '-passlogfile', passlogfile,
+                '-deadline', 'good',
                 '-pix_fmt', 'yuv420p',
-                '-c:a', audio_codec,
-                '-b:a', '192k',
+                '-c:a', 'libopus',
+                '-b:a', '100k',
                 '-movflags', 'faststart',
                 video_output_path
             ]
 
-            # Run FFmpeg
-            subprocess.run(ffmpeg_cmd)
+            # Run passes
+            print(f"Running first pass with bitrate {bitrate}...")
+            subprocess.run(first_pass, check=True)
+
+            print("Running second pass...")
+            subprocess.run(second_pass, check=True)
 
             # Cleanup
+            for ext in ['log', 'log.mbtree']:
+                try:
+                    os.remove(f"{passlogfile}.{ext}")
+                except FileNotFoundError:
+                    pass
             shutil.rmtree(temp_dir)
-
-
 
 
 
