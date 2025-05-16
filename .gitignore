@@ -1,2 +1,14 @@
+# PyInstaller build artifacts
+build/
+dist/
 __pycache__/
+*.spec
+*.pyc
+*.pyo
+*.pyd
+
+# Log files
+*.log
+
+# Other
 .env
