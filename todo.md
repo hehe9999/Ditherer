@@ -26,6 +26,8 @@
 - [ ] Clean up Ditherer_gui.py for better readability
 - [ ] Drag and drop functionality
 - [ ] Optimize optimize optimize!
+- [ ] Discord webhook integration
+- [ ] Create exporter.py to handle all exporting functions, leaving Ditherer_gui.py to solely handle the gui and allow for CLI and discord bot operations
 
 
 
