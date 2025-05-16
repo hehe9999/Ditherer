@@ -1,0 +1,45 @@
+name: Windows Release with SLSA3
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-windows:
+    name: Build Windows Binary with Provenance
+    runs-on: windows-latest
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.3'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install -r requirements.txt
+          
+      - name: Build binary
+        run: |
+          pyinstaller --onefile main.py
+          mkdir dist-out
+          copy dist\main.exe dist-out\dither.exe
+
+      - name: Upload binary to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist-out/dither.exe
+
+      - name: Generate SLSA3 provenance
+        uses: slsa-framework/slsa-github-generator@v2.1.0
+        with:
+          base64-subjects: false
+          artifact-path: dist-out/dither.exe
