@@ -402,7 +402,7 @@ def export_media(format):
             # Two-pass VP9 encoding with passlogfile
             passlogfile = os.path.join(temp_dir, "ffmpeg2pass")
             null_output = os.path.join(temp_dir, "null.webm")  # dummy first pass output
-
+            # fmt: off
             first_pass = [
                 "ffmpeg", "-y",
                 "-framerate", str(fps),
@@ -441,7 +441,7 @@ def export_media(format):
                 "-movflags", "faststart",
                 video_output_path,
             ]
-
+            # fmt: on
 
             # Run passes
             print(f"Running first pass with bitrate {bitrate}...")
