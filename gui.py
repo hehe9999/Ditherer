@@ -6,14 +6,15 @@ import threading
 import tempfile
 import shutil
 import subprocess
-from dataclasses import dataclass
 
 # Third-party imports
 import cv2
 from PIL import Image, ImageTk
 
 # Local imports
-from Ditherer import apply_bayer_dithering, apply_grayscale, fs_dither
+from dither import apply_bayer_dithering, apply_grayscale, fs_dither
+from media.image_utils import load_image, resize_to_fit
+from media.state import MediaState
 
 # Tkinter imports
 import tkinter as tk
@@ -93,20 +94,7 @@ loaded_image = None
 image_tk = None
 resize_after_id = None
 prev_size = None
-
-
-@dataclass
-class MediaState:
-    extension: str = ""
-    frame_rate: float = 0.0
-    is_video: bool = False
-    total_frames: int = 0
-    cap: cv2.VideoCapture = None
-    path: str = ""
-
-
 media_state = MediaState()
-
 
 # When 'Load Media' is clicked
 def load_media():
@@ -119,7 +107,8 @@ def load_media():
     if path:
         ext = os.path.splitext(path)[1]
         if ext in image_extensions:
-            loaded_image = Image.open(path)
+            media_state.is_video = False
+            loaded_image = load_image(path)
             update_image()
             export_buttons()
         elif ext in video_extensions:
@@ -146,25 +135,9 @@ def update_image():
     if loaded_image:
         frame_width = image_frame.winfo_width()
         frame_height = image_frame.winfo_height()
-        frame_aspect = frame_width / frame_height
 
-        # Original image size and aspect ratio
-        image_width, image_height = loaded_image.size
-        image_aspect = image_width / image_height
+        resized_image = resize_to_fit(loaded_image, frame_width, frame_height)
 
-        # Fit image into window with maintained aspect ratio
-        if image_aspect > frame_aspect:
-            new_width = frame_width
-            new_height = int(frame_width / image_aspect)
-        else:
-            new_height = frame_height
-            new_width = int(frame_height * image_aspect)
-
-        resized_image = loaded_image.resize(
-            (new_width, new_height), Image.Resampling.BILINEAR
-        )
-
-        # Convert to use with Tkinter
         image_tk = ImageTk.PhotoImage(resized_image)
         image_label.config(image=image_tk)
         image_label.image = image_tk

@@ -5,7 +5,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 WATCH_DIR = Path(__file__).resolve().parent.parent
-ENTRY_POINT = "ditherer_gui.py"
+ENTRY_POINT = "gui.py"
 
 
 class RestartOnChange(FileSystemEventHandler):
