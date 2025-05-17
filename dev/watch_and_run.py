@@ -1,10 +1,12 @@
-import subprocess, time
+import subprocess
+import time
 from pathlib import Path
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 WATCH_DIR = Path(__file__).resolve().parent.parent
 ENTRY_POINT = "ditherer_gui.py"
+
 
 class RestartOnChange(FileSystemEventHandler):
     def __init__(self):
@@ -21,6 +23,7 @@ class RestartOnChange(FileSystemEventHandler):
         if event.src_path.endswith(".py"):
             print(f"Detected change in {event.src_path}, restarting GUI...")
             self.run_gui()
+
 
 if __name__ == "__main__":
     observer = Observer()
