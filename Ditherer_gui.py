@@ -404,56 +404,44 @@ def export_media(format):
             null_output = os.path.join(temp_dir, "null.webm")  # dummy first pass output
 
             first_pass = [
-                "ffmpeg",
-                "-y",
-                "-framerate",
-                str(fps),
-                "-i",
-                os.path.join(temp_dir, "frame_%04d.png"),
-                "-c:v",
-                "libvpx-vp9",
-                "-b:v",
-                bitrate,
-                "-pass",
-                "1",
-                "-passlogfile",
-                passlogfile,
-                "-an",
-                "-f",
-                "webm",
-                null_output,
+                "ffmpeg", "-y",
+                "-framerate", str(fps),
+                "-i", os.path.join(temp_dir, "frame_%04d.png"),
+
+                # Video codec settings
+                "-c:v", "libvpx-vp9",
+                "-b:v", bitrate,
+                "-pass", "1",
+                "-passlogfile", passlogfile,
+
+                # Output format
+                "-an", "-f", "webm", null_output,
             ]
 
             second_pass = [
-                "ffmpeg",
-                "-y",
-                "-framerate",
-                str(fps),
-                "-i",
-                os.path.join(temp_dir, "frame_%04d.png"),
-                "-i",
-                media_state.path,
+                "ffmpeg", "-y",
+                "-framerate", str(fps),
+                "-i", os.path.join(temp_dir, "frame_%04d.png"),
+                "-i", media_state.path,
                 "-shortest",
-                "-c:v",
-                "libvpx-vp9",
-                "-b:v",
-                bitrate,
-                "-pass",
-                "2",
-                "-passlogfile",
-                passlogfile,
-                "-deadline",
-                "good",
-                "-pix_fmt",
-                "yuv420p",
-                "-c:a",
-                "libopus",
-                "-b:a",
-                "100k",
-                "-movflags",
-                "faststart",
+
+                # Video codec settings
+                "-c:v", "libvpx-vp9",
+                "-b:v", bitrate,
+                "-pass", "2",
+                "-passlogfile", passlogfile,
+                "-deadline", "good",
+                "-pix_fmt", "yuv420p",
+
+                # Audio settings
+                "-c:a", "libopus",
+                "-b:a", "100k",
+
+                # Output options
+                "-movflags", "faststart",
                 video_output_path,
             ]
+
 
             # Run passes
             print(f"Running first pass with bitrate {bitrate}...")
