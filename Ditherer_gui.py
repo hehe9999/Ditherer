@@ -11,7 +11,6 @@ from dataclasses import dataclass
 # Third-party imports
 import cv2
 from PIL import Image, ImageTk
-from dotenv import load_dotenv
 
 # Local imports
 from Ditherer import apply_bayer_dithering, apply_grayscale, fs_dither
