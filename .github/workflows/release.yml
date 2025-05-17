@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13.3'
+          python-version: '3.13'
 
       - name: Install dependencies
         run: |
@@ -31,7 +31,7 @@ jobs:
         run: |
           pyinstaller --onefile main.py
           mkdir dist-out
-          copy dist\main.exe dist-out\dither.exe
+          Copy-Item dist\main.exe dist-out\dither.exe
 
       - name: Upload binary to release
         uses: softprops/action-gh-release@v1
