@@ -1,4 +1,4 @@
-name: Windows Release with SLSA3
+name: Windows Release with SLSA3, Checksums, and GPG Signing
 
 on:
   release:
@@ -26,17 +26,41 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install -r requirements.txt
-          
+
       - name: Build binary
         run: |
           pyinstaller --onefile main.py
           mkdir dist-out
           Copy-Item dist\main.exe dist-out\dither.exe
 
-      - name: Upload binary to release
+      - name: Generate SHA256 checksum
+        shell: bash
+        run: |
+          cd dist-out
+          sha256sum dither.exe > dither.exe.sha256
+
+      - name: Import GPG key
+        shell: bash
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          gpgconf --kill gpg-agent
+
+      - name: Sign checksum with GPG
+        shell: bash
+        run: |
+          cd dist-out
+          gpg --batch --yes --pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}" \
+            --armor --output dither.exe.sha256.asc --detach-sign dither.exe.sha256
+
+      - name: Upload artifacts to release
         uses: softprops/action-gh-release@v1
         with:
-          files: dist-out/dither.exe
+          files: |
+            dist-out/dither.exe
+            dist-out/dither.exe.sha256
+            dist-out/dither.exe.sha256.asc
 
       - name: Generate SLSA3 provenance
         uses: slsa-framework/slsa-github-generator@v2.1.0
