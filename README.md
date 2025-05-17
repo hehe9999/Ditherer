@@ -1,5 +1,5 @@
 # A fork of [MOPHEADART's Python-based ditherer](https://github.com/MOPHEADART/Ditherer)
-
+![Python](https://img.shields.io/badge/python-3.13+-blue?logo=python) ![License](https://img.shields.io/github/license/hehe9999/Ditherer) ![SLSA Level 3](https://img.shields.io/badge/SLSA-3-blueviolet?logo=github&logoColor=white) ![Windows Release](https://github.com/hehe9999/Ditherer/actions/workflows/release.yml/badge.svg) ![GPG Signed](https://img.shields.io/badge/Releases-Signed%20with%20GPG-4e8ccf?logo=gnupg&logoColor=white) ![Checksummed](https://img.shields.io/badge/Releases-Checksummed%20(SHA256)-green?logo=files&logoColor=white)
 ## What is dithering, and why is it useful?
 [Dithering](https://en.wikipedia.org/wiki/Dither) (in the context of digital images) is the process of intentionally applying noise to randomize [quantization error](https://en.wikipedia.org/wiki/Quantization_(signal_processing)) and is useful in preventing [color banding](https://en.wikipedia.org/wiki/Colour_banding) in an image. This effect is commonly used in systems with a limited [color palette](https://en.wikipedia.org/wiki/Palette_(computing)), and can create the illusion of [color depth](https://en.wikipedia.org/wiki/Color_depth) due to the way the human eye perceives color.
 
@@ -8,8 +8,8 @@ This project is a Python-based dithering tool that can be used on a variety of m
 
 ## Usage
 ### As a standalone .exe:
-1. Download the latest release from the [releases page](https://github.com/hehe9999/Ditherer/releases).
-2. Open 'Ditherer.exe'.
+1. Download the latest release from the [releases page](https://github.com/hehe9999/Ditherer/releases). (Optional: verify the binary using the guide at [verify.md](/verify.md))
+2. Open the `.exe`.
 3. Import your media using the button at the top of the app.
 4. Choose a dithering algorithm from the dropdown.
 5. Adjust the settings for your selected algorithm
@@ -40,6 +40,9 @@ This project is a Python-based dithering tool that can be used on a variety of m
 This project uses [SLSA 3 Provenance](https://slsa.dev) for secure builds. Each release is automatically built by GitHub Actions and includes a provenance file to verify the binary came from this source code and was not tampered with.
 
 You can verify the `.exe` binary using tools like `slsa-verifier` or the [Sigstore tooling](https://docs.sigstore.dev/).
+
+### Verifying the binary
+For detailed steps on verifying the binary please refer to [verify.md](/verify.md).
 
 ---
 
