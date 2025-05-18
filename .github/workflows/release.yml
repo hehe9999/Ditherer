@@ -31,7 +31,7 @@ jobs:
 
       - name: Build binary
         run: |
-          pyinstaller --onefile main.py
+          pyinstaller --onefile gui.py
           mkdir dist-out
           Copy-Item dist\main.exe dist-out\dither.exe
 
