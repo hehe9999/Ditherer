@@ -2,7 +2,7 @@
 from PIL import Image
 
 def load_image(path):
-    return Image.open(path)
+    return Image.open(path).convert(mode='RGB')
 
 def resize_to_fit(image, target_width, target_height):
     image_width, image_height = image.size
