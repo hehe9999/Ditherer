@@ -31,9 +31,9 @@ jobs:
 
       - name: Build binary
         run: |
-          pyinstaller --onefile gui.py
+          pyinstaller --onefile --noconsole gui.py
           mkdir dist-out
-          Copy-Item dist\main.exe dist-out\dither.exe
+          Copy-Item dist\gui.exe dist-out\dither.exe
 
       - name: Generate SHA256 subjects
         id: hash
