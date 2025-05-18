@@ -5,12 +5,14 @@ on:
     types: [published]
 
 jobs:
-  build-windows:
-    name: Build Windows Binary with Provenance
+  build:
+    name: Build Windows Binary
     runs-on: windows-latest
     permissions:
       id-token: write
       contents: write
+    outputs:
+      subjects: ${{ steps.hash.outputs.subjects }}
 
     steps:
       - name: Checkout code
@@ -33,7 +35,16 @@ jobs:
           mkdir dist-out
           Copy-Item dist\main.exe dist-out\dither.exe
 
-      - name: Generate SHA256 checksum
+      - name: Generate SHA256 subjects
+        id: hash
+        shell: bash
+        run: |
+          cd dist-out
+          DIGEST=$(sha256sum dither.exe | cut -d ' ' -f1)
+          SUBJECTS=$(jq -nc --arg name "dither.exe" --arg digest "$DIGEST" '[{"name": $name, "digest": {"sha256": $digest}}]' | base64 -w0)
+          echo "subjects=$SUBJECTS" >> $GITHUB_OUTPUT
+
+      - name: Generate SHA256 checksum file
         shell: bash
         run: |
           cd dist-out
@@ -54,23 +65,6 @@ jobs:
           gpg --batch --yes --pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}" \
             --armor --output dither.exe.sha256.asc --detach-sign dither.exe.sha256
 
-      - name: Generate SLSA3 provenance
-        uses: slsa-framework/slsa-github-generator@v2.1.0
-        with:
-          base64-subjects: false
-          artifact-path: dist-out/dither.exe
-          output-path: dist-out/dither.attestation
-
-      - name: Install cosign for provenance verification
-        uses: sigstore/cosign-installer@v3.5.0
-
-      - name: Verify SLSA provenance
-        run: |
-          cosign verify-attestation dist-out/dither.exe \
-            --type slsaprovenance \
-            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/${{ github.workflow }}@refs/heads/${{ github.ref_name }}" \
-            --certificate-oidc-issuer https://token.actions.githubusercontent.com
-
       - name: Upload artifacts to release
         if: success()
         uses: softprops/action-gh-release@v1
@@ -79,4 +73,15 @@ jobs:
             dist-out/dither.exe
             dist-out/dither.exe.sha256
             dist-out/dither.exe.sha256.asc
-            dist-out/dither.attestation
+
+  provenance:
+    name: Generate SLSA3 Provenance
+    needs: build
+    permissions:
+      actions: read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.4.0
+    with:
+      base64-subjects: "${{ needs.build.outputs.subjects }}"
+      upload-assets: true
