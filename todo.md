@@ -5,7 +5,6 @@
 - [ ] Add live preview
 - [ ] Add processing time display (ex: Image took 5.92s to process!)
 - [ ] Add filter effects (ex: blur, sharpen, crt, etc. could be done standalone or with dithering)
-- [ ] Beautify UI
 - [ ] GIF support
 - [ ] Add controls for palette size/bits per color
 - [ ] Add cancel button for processing
@@ -34,7 +33,6 @@
 - [ ] Add a "Drunk mode" that changes dithering algorithms randomly per frame of a video
 - [ ] More randomization options than just the weights (ex: randomize palette, randomize dithering algorithms, etc.)
 - [ ] Add an "Ascii mode" to convert images/frames into ascii art (dither afterwards? font options?)
-- [ ] UI Themes?
 
 
 
@@ -52,3 +50,4 @@
 - [x] Perform JIT compilation using numba for Floyd-Steinberg dithering function (50x-100x speedup)
 - [x] Perform JIT compilation using numba for Bayer Dithering function (2x-10x speedup for large videos)
 - [x] Add dev branch for more updated commits
+- [x] Beautify UI
