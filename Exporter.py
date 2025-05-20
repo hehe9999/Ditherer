@@ -6,6 +6,7 @@ import tempfile
 import shutil
 import subprocess
 from tkinter import filedialog
+import multiprocessing
 
 # Third-party imports
 import cv2
@@ -81,7 +82,7 @@ def export_image(
         dithered.save(file_path, format=format)
 
     progress_callback(100)
-    window.update_idletasks
+    window.update_idletasks()
 
     window.after(500, lambda: progress_callback(0))
 
@@ -188,11 +189,12 @@ def export_video(
             entropy_values.append(calculate_image_entropy(img))
         avg_entropy = sum(entropy_values) / len(entropy_values)
         bitrate_kbps = max(
-            200, int(avg_entropy * 400)
-        )  # tuneable bitrate scale based on calculated entropy
+            200, int(avg_entropy * 400) # tuneable bitrate scale based on calculated entropy
+        )
         bitrate = f"{bitrate_kbps}k"
         print(f"Average entropy: {avg_entropy}")
         print(f"Estimated bitrate: {bitrate}")
+        num_threads = multiprocessing.cpu_count()
 
         # Two-pass VP9 encoding with passlogfile
         passlogfile = os.path.join(temp_dir, "ffmpeg2pass")
@@ -208,6 +210,7 @@ def export_video(
             "-b:v", bitrate,
             "-pass", "1",
             "-passlogfile", passlogfile,
+            "-threads", str(num_threads),
 
             # Output format
             "-an", "-f", "webm", null_output,
@@ -227,6 +230,7 @@ def export_video(
             "-passlogfile", passlogfile,
             "-deadline", "good",
             "-pix_fmt", "yuv420p",
+            "-threads", str(num_threads),
 
             # Audio settings
             "-c:a", "libopus",
@@ -252,6 +256,6 @@ def export_video(
             except FileNotFoundError:
                 pass
         shutil.rmtree(temp_dir)
-        window.update_idletasks
+        window.update_idletasks()
 
         window.after(500, lambda: progress_callback(0))
