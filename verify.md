@@ -19,7 +19,7 @@
 ## Step-by-Step Verification
 **1. Import the public GPG key**
 
-Open **Command Prompt or Git Bash** in the directory containing the three files, then run:
+Open **Command Prompt or Git Bash** in the directory containing the three release files and the public gpg key, then run:
 ```bash
 gpg --import gpg-public-key.asc
 ```
