@@ -1,7 +1,10 @@
+# Standard library imports
+from functools import lru_cache
+
+# Third-party imports
 from PIL import Image
 import numpy as np
 import numba
-from functools import lru_cache
 
 
 # Define grayscale conversion
