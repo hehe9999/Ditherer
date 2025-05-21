@@ -41,7 +41,7 @@ def export_image(
     if loaded_image is None:
         print("No image loaded")
         return
-    progress_callback(10)
+    progress_callback(10 / 100)
 
     if dropdown.get() == "Bayer":
         matrix_size = get_matrix_size(dropdown, dropdown_submenu)
@@ -55,7 +55,7 @@ def export_image(
             source_image = grayscale
         else:
             source_image = loaded_image
-        progress_callback(30)
+        progress_callback(30 / 100)
         slider_values = [s.get() for s in sliders]
         dithered = fs_dither(
             source_image,
@@ -70,7 +70,7 @@ def export_image(
         raise ValueError(f"Unsupported algorithm: {dropdown.get()}")
 
     if progress_callback:
-        progress_callback(50)
+        progress_callback(50 / 100)
 
     ext = format.lower()
     file_path = filedialog.asksaveasfilename(
@@ -81,7 +81,7 @@ def export_image(
     if file_path:
         dithered.save(file_path, format=format)
 
-    progress_callback(100)
+    progress_callback(100 / 100)
     window.update_idletasks()
 
     window.after(500, lambda: progress_callback(0))
@@ -153,7 +153,7 @@ def export_video(
             dithered.save(frame_path, format="PNG", optimize=True)
 
             frame_count += 1
-            progress_callback(int((frame_count / media_state.total_frames) * 100))
+            progress_callback(int((frame_count / media_state.total_frames)))
 
             # Calculate and print time for this frame
             frame_end_time = time.time()
