@@ -13,7 +13,7 @@ This project is a Python-based dithering tool that can be used on a variety of m
 3. Import your media using the button at the top of the app.
 4. Choose a dithering algorithm from the dropdown.
 5. Adjust the settings for your selected algorithm
-6. Export your dithered file using the button/s at the bottom.
+6. Export your dithered file using the button(s) at the bottom.
 
 ### Using the Command Prompt:
 
