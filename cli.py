@@ -5,7 +5,7 @@ import argparse
 from dither import apply_bayer_dithering, apply_grayscale, fs_dither
 from media.state import MediaState
 from exporter import export_image, export_video
-
+from media.image_utils import load_image
 
 def main():
     parser = argparse.ArgumentParser(description="Multimedia Dithering Tool")
@@ -25,4 +25,12 @@ def main():
 
     args = parser.parse_args()
 
-    if args.algorithm == "bayer"
+    if args.algorithm != "bayer" and args.matrix_size:
+        parser.error("The --matrix_size option is only supported with the Bayer algorithm")
+
+    image = load_image(args.input)
+    
+
+
+    
+
