@@ -10,6 +10,7 @@ from dither import apply_bayer_dithering, apply_grayscale, fs_dither
 from media.image_utils import load_image, resize_to_fit
 from media.state import MediaState
 from exporter import export_image, export_video
+from media.video_utils import load_video
 
 # Tkinter imports
 import customtkinter as ctk
@@ -91,11 +92,10 @@ loaded_image = None
 image_tk = None
 resize_after_id = None
 prev_size = None
-media_state = MediaState()
 
 # When 'Load Media' is clicked
 def load_media():
-    global loaded_image, image_tk, cap
+    global loaded_image, image_tk
     path = filedialog.askopenfilename(
         filetypes=[("Media Files", "*.png; *.jpg; *.jpeg; *.mp4; *.mkv, *.webm")]
     )
@@ -104,19 +104,13 @@ def load_media():
     if path:
         ext = os.path.splitext(path)[1]
         if ext in image_extensions:
-            media_state.is_video = False
+            MediaState.is_video = False
             loaded_image = load_image(path)
             update_image()
             export_buttons()
         elif ext in video_extensions:
-            media_state.is_video = True
-            media_state.path = path
-            cap = cv2.VideoCapture(path)
-            media_state.cap = cap
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            media_state.frame_rate = fps
-            media_state.total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            media_state.extension = ext
+            load_video(path)
+            cap = MediaState.cap
             ret, frame = cap.read()
             loaded_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             update_image()
@@ -253,54 +247,55 @@ export_png_button = ctk.CTkButton(
     export_frame, text="Export PNG", command=lambda: export_image(
         window=window,
         dropdown=dropdown,
-        dropdown_submenu=dropdown_submenu,
+        matrix_selection=dropdown_submenu.get(),
         loaded_image=loaded_image,
         grayscale_enabled=grayscale_var.get(),
         downscale=downscale_factor.get(),
         format="png",
-        sliders=sliders,
+        slider_values = [s.get() for s in sliders],
         apply_grayscale=apply_grayscale,
         apply_bayer_dithering=apply_bayer_dithering,
         fs_dither=fs_dither,
-        progress_callback=progress_var.set
+        progress_callback=progress_var.set,
+        gui=True
 ))
 
 export_jpg_button = ctk.CTkButton(
     export_frame, text="Export JPG", command=lambda: export_image(
         window=window,
         dropdown=dropdown,
-        dropdown_submenu=dropdown_submenu,
+        matrix_selection=dropdown_submenu.get(),
         loaded_image=loaded_image,
         grayscale_enabled=grayscale_var.get(),
         downscale=downscale_factor.get(),
         format="jpeg",
-        sliders=sliders,
+        slider_values = [s.get() for s in sliders],
         apply_grayscale=apply_grayscale,
         apply_bayer_dithering=apply_bayer_dithering,
         fs_dither=fs_dither,
-        progress_callback=progress_var.set
+        progress_callback=progress_var.set,
+        gui=True
 ))
 
 export_video_button = ctk.CTkButton(
     export_frame, text="Export Video", command=lambda: export_video(
         window,
         dropdown,
-        dropdown_submenu,
-        media_state,
+        MediaState,
         grayscale_var,
+        matrix_selection=dropdown_submenu.get(),
         apply_grayscale=apply_grayscale,
         apply_bayer_dithering=apply_bayer_dithering,
         fs_dither=fs_dither,
         downscale=downscale_factor.get(),
-        sliders=sliders,
+        slider_values = [s.get() for s in sliders],
         progress_callback=progress_var.set,
-
-
+        gui=True
     )
 )
 
 def export_buttons(*args):
-    if media_state.is_video:
+    if MediaState.is_video:
         export_jpg_button.pack_forget()
         export_png_button.pack_forget()
         export_video_button.pack(side=ctk.TOP, expand=True)

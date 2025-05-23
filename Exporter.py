@@ -12,31 +12,30 @@ import multiprocessing
 import cv2
 from PIL import Image
 
-def get_matrix_size(dropdown, dropdown_submenu):
-    if dropdown.get() == "Bayer":
-        matrix_sizes = {
-            "2x2": 2,
-            "4x4": 4,
-            "8x8": 8,
-            "16x16": 16
-        }
-        matrix_size = matrix_sizes.get(dropdown_submenu.get())
-    return matrix_size
 
+def get_matrix_size(selection: str):
+    matrix_sizes = {
+        "2x2": 2,
+        "4x4": 4,
+        "8x8": 8,
+        "16x16": 16
+    }
+    return matrix_sizes.get(selection)
 
 def export_image(
     window,
     dropdown,
-    dropdown_submenu,
+    matrix_selection,
     loaded_image,
     grayscale_enabled,
     downscale,
     format,
-    sliders,
+    slider_values,
     apply_grayscale,
     apply_bayer_dithering,
     fs_dither,
-    progress_callback=None
+    progress_callback,
+    gui
 ):
     if loaded_image is None:
         print("No image loaded")
@@ -44,7 +43,7 @@ def export_image(
     progress_callback(10 / 100)
 
     if dropdown.get() == "Bayer":
-        matrix_size = get_matrix_size(dropdown, dropdown_submenu)
+        matrix_size = get_matrix_size(matrix_selection)
         if grayscale_enabled:
             loaded_image = apply_grayscale(loaded_image)
         dithered = apply_bayer_dithering(loaded_image, downscale, matrix_size)
@@ -56,14 +55,10 @@ def export_image(
         else:
             source_image = loaded_image
         progress_callback(30 / 100)
-        slider_values = [s.get() for s in sliders]
         dithered = fs_dither(
             source_image,
             downscale,
-            slider_values[0],
-            slider_values[1],
-            slider_values[2],
-            slider_values[3],
+            *slider_values
         )
 
     else:
@@ -82,23 +77,24 @@ def export_image(
         dithered.save(file_path, format=format)
 
     progress_callback(100 / 100)
-    window.update_idletasks()
+    if gui:
+        window.update_idletasks()
 
-    window.after(500, lambda: progress_callback(0))
+        window.after(500, lambda: progress_callback(0))
 
 def export_video(
     window,
     dropdown,
-    dropdown_submenu,
     media_state,
     grayscale_var,
+    matrix_selection,
     apply_grayscale,
     apply_bayer_dithering,
     fs_dither,
     downscale,
-    sliders,
+    slider_values,
     progress_callback,
-
+    gui
 ):
     video_output_path = filedialog.asksaveasfilename(
         defaultextension=".webm", filetypes=[("(.webm) files", "*.webm")]
@@ -127,7 +123,7 @@ def export_video(
 
             # Apply dithering
             if dropdown.get() == "Bayer":
-                matrix_size = get_matrix_size(dropdown, dropdown_submenu)
+                matrix_size = get_matrix_size(matrix_selection)
                 if grayscale_var.get():
                     grayscale = apply_grayscale(img_pil)
                     dithered = apply_bayer_dithering(
@@ -140,7 +136,6 @@ def export_video(
                     )
 
             elif dropdown.get() == "Floyd-Steinberg":
-                slider_values = [slide.get() for slide in sliders]
                 if grayscale_var.get():
                     grayscale = apply_grayscale(img_pil)
                     dithered = fs_dither(grayscale, downscale, *slider_values)
@@ -256,6 +251,7 @@ def export_video(
             except FileNotFoundError:
                 pass
         shutil.rmtree(temp_dir)
-        window.update_idletasks()
+        if gui:
+            window.update_idletasks()
 
-        window.after(500, lambda: progress_callback(0))
+            window.after(500, lambda: progress_callback(0))
