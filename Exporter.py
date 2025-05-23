@@ -12,6 +12,9 @@ import multiprocessing
 import cv2
 from PIL import Image
 
+# Local imports
+from dither import fs_dither, apply_bayer_dithering, apply_grayscale
+
 
 def get_matrix_size(selection: str):
     matrix_sizes = {
@@ -23,7 +26,6 @@ def get_matrix_size(selection: str):
     return matrix_sizes.get(selection)
 
 def export_image(
-    window,
     dropdown,
     matrix_selection,
     loaded_image,
@@ -31,11 +33,8 @@ def export_image(
     downscale,
     format,
     slider_values,
-    apply_grayscale,
-    apply_bayer_dithering,
-    fs_dither,
     progress_callback,
-    gui
+    gui=None
 ):
     if loaded_image is None:
         print("No image loaded")
@@ -78,23 +77,18 @@ def export_image(
 
     progress_callback(100 / 100)
     if gui:
-        window.update_idletasks()
-
-        window.after(500, lambda: progress_callback(0))
+        gui()
 
 def export_video(
-    window,
     dropdown,
     media_state,
     grayscale_var,
     matrix_selection,
-    apply_grayscale,
-    apply_bayer_dithering,
-    fs_dither,
     downscale,
     slider_values,
     progress_callback,
-    gui
+    video_output_path,
+    gui=None
 ):
     video_output_path = filedialog.asksaveasfilename(
         defaultextension=".webm", filetypes=[("(.webm) files", "*.webm")]
@@ -252,6 +246,4 @@ def export_video(
                 pass
         shutil.rmtree(temp_dir)
         if gui:
-            window.update_idletasks()
-
-            window.after(500, lambda: progress_callback(0))
+            gui()

@@ -6,7 +6,6 @@ import cv2
 from PIL import Image, ImageTk
 
 # Local imports
-from dither import apply_bayer_dithering, apply_grayscale, fs_dither
 from media.image_utils import load_image, resize_to_fit
 from media.state import MediaState
 from exporter import export_image, export_video
@@ -245,7 +244,6 @@ progress_bar.place(relx=0.5, rely=0.97, relwidth=0.9, anchor="center")
 # Export buttons
 export_png_button = ctk.CTkButton(
     export_frame, text="Export PNG", command=lambda: export_image(
-        window=window,
         dropdown=dropdown,
         matrix_selection=dropdown_submenu.get(),
         loaded_image=loaded_image,
@@ -253,16 +251,13 @@ export_png_button = ctk.CTkButton(
         downscale=downscale_factor.get(),
         format="png",
         slider_values = [s.get() for s in sliders],
-        apply_grayscale=apply_grayscale,
-        apply_bayer_dithering=apply_bayer_dithering,
-        fs_dither=fs_dither,
         progress_callback=progress_var.set,
-        gui=True
-))
+        gui=update_window
+        )
+)
 
 export_jpg_button = ctk.CTkButton(
     export_frame, text="Export JPG", command=lambda: export_image(
-        window=window,
         dropdown=dropdown,
         matrix_selection=dropdown_submenu.get(),
         loaded_image=loaded_image,
@@ -270,27 +265,24 @@ export_jpg_button = ctk.CTkButton(
         downscale=downscale_factor.get(),
         format="jpeg",
         slider_values = [s.get() for s in sliders],
-        apply_grayscale=apply_grayscale,
-        apply_bayer_dithering=apply_bayer_dithering,
-        fs_dither=fs_dither,
         progress_callback=progress_var.set,
-        gui=True
-))
+        gui=update_window
+        )
+)
 
 export_video_button = ctk.CTkButton(
     export_frame, text="Export Video", command=lambda: export_video(
-        window,
         dropdown,
         MediaState,
         grayscale_var,
         matrix_selection=dropdown_submenu.get(),
-        apply_grayscale=apply_grayscale,
-        apply_bayer_dithering=apply_bayer_dithering,
-        fs_dither=fs_dither,
         downscale=downscale_factor.get(),
         slider_values = [s.get() for s in sliders],
         progress_callback=progress_var.set,
-        gui=True
+        video_output_path = filedialog.asksaveasfilename(
+        defaultextension=".webm", filetypes=[("(.webm) files", "*.webm")]
+    ),
+        gui=update_window
     )
 )
 
@@ -303,6 +295,11 @@ def export_buttons(*args):
         export_video_button.pack_forget()
         export_png_button.pack(side=ctk.RIGHT, expand=True)
         export_jpg_button.pack(side=ctk.LEFT, expand=True)
+
+def update_window():
+    window.update_idletasks()
+
+    window.after(500, lambda: progress_var.set(0))
 
 # Tinker Event loop
 window.mainloop()
