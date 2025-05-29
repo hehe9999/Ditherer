@@ -5,7 +5,6 @@ import time
 import tempfile
 import shutil
 import subprocess
-from tkinter import filedialog
 import multiprocessing
 
 # Third-party imports
@@ -17,16 +16,12 @@ from dither import fs_dither, apply_bayer_dithering, apply_grayscale
 
 
 def get_matrix_size(selection: str):
-    matrix_sizes = {
-        "2x2": 2,
-        "4x4": 4,
-        "8x8": 8,
-        "16x16": 16
-    }
+    matrix_sizes = {"2x2": 2, "4x4": 4, "8x8": 8, "16x16": 16}
     return matrix_sizes.get(selection)
 
+
 def export_image(
-    dropdown,
+    algorithm,
     matrix_selection,
     loaded_image,
     grayscale_enabled,
@@ -34,71 +29,60 @@ def export_image(
     format,
     slider_values,
     progress_callback,
-    gui=None
+    image_output_path,
+    gui=None,
 ):
     if loaded_image is None:
         print("No image loaded")
         return
     progress_callback(10 / 100)
 
-    if dropdown.get() == "Bayer":
+    if algorithm == "Bayer":
         matrix_size = get_matrix_size(matrix_selection)
         if grayscale_enabled:
             loaded_image = apply_grayscale(loaded_image)
         dithered = apply_bayer_dithering(loaded_image, downscale, matrix_size)
 
-    elif dropdown.get() == "Floyd-Steinberg":
+    elif algorithm == "Floyd-Steinberg":
         if grayscale_enabled:
             grayscale = apply_grayscale(loaded_image)
-            source_image = grayscale
-        else:
-            source_image = loaded_image
+            loaded_image = grayscale
         progress_callback(30 / 100)
-        dithered = fs_dither(
-            source_image,
-            downscale,
-            *slider_values
-        )
+        dithered = fs_dither(loaded_image, downscale, *slider_values)
 
     else:
-        raise ValueError(f"Unsupported algorithm: {dropdown.get()}")
+        raise ValueError(f"Unsupported algorithm: {algorithm}")
 
-    if progress_callback:
-        progress_callback(50 / 100)
+    progress_callback(50 / 100)
 
-    ext = format.lower()
-    file_path = filedialog.asksaveasfilename(
-        defaultextension=f".{ext}",
-        filetypes=[(f"{format} files", f"*.{ext}")]
-    )
-
-    if file_path:
-        dithered.save(file_path, format=format)
+    if image_output_path:
+        dithered.save(image_output_path, format=format)
 
     progress_callback(100 / 100)
+    print(f"Finished! Output: {image_output_path}")
     if gui:
         gui()
 
+
 def export_video(
-    dropdown,
+    algorithm,
     media_state,
-    grayscale_var,
+    grayscale_enabled,
     matrix_selection,
     downscale,
     slider_values,
     progress_callback,
     video_output_path,
-    gui=None
+    gui=None,
+    enable_printing=None,
 ):
-    video_output_path = filedialog.asksaveasfilename(
-        defaultextension=".webm", filetypes=[("(.webm) files", "*.webm")]
-    )
 
     if video_output_path:
         fps = media_state.frame_rate
         # Create temporary directory for compressed frames
         temp_dir = tempfile.mkdtemp()
-        print(temp_dir)
+        if enable_printing:
+            print(f"Temporary directory created: {temp_dir}")
         frame_count = 0
 
         # Reset video capture position
@@ -109,28 +93,25 @@ def export_video(
         total_start_time = time.time()
 
         while ret:
-            # Start timing frame processing
-            frame_start_time = time.time()
+            if enable_printing:
+                # Start timing frame processing
+                frame_start_time = time.time()
 
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             img_pil = Image.fromarray(rgb_frame)
 
             # Apply dithering
-            if dropdown.get() == "Bayer":
+            if algorithm == "Bayer":
                 matrix_size = get_matrix_size(matrix_selection)
-                if grayscale_var.get():
+                if grayscale_enabled:
                     grayscale = apply_grayscale(img_pil)
-                    dithered = apply_bayer_dithering(
-                        grayscale, downscale, matrix_size
-                    )
+                    dithered = apply_bayer_dithering(grayscale, downscale, matrix_size)
                     dithered = dithered.convert("RGB")
                 else:
-                    dithered = apply_bayer_dithering(
-                        img_pil, downscale, matrix_size
-                    )
+                    dithered = apply_bayer_dithering(img_pil, downscale, matrix_size)
 
-            elif dropdown.get() == "Floyd-Steinberg":
-                if grayscale_var.get():
+            elif algorithm == "Floyd-Steinberg":
+                if grayscale_enabled:
                     grayscale = apply_grayscale(img_pil)
                     dithered = fs_dither(grayscale, downscale, *slider_values)
                     dithered = dithered.convert("RGB")
@@ -142,14 +123,15 @@ def export_video(
             dithered.save(frame_path, format="PNG", optimize=True)
 
             frame_count += 1
-            progress_callback(int((frame_count / media_state.total_frames)))
+            progress_callback(frame_count / media_state.total_frames)
 
             # Calculate and print time for this frame
-            frame_end_time = time.time()
-            frame_process_time = frame_end_time - frame_start_time
-            print(
-                f"Frame {frame_count} processed in {frame_process_time:.4f} seconds"
-            )
+            if enable_printing:
+                frame_end_time = time.time()
+                frame_process_time = frame_end_time - frame_start_time
+                print(
+                    f"Frame {frame_count} processed in {frame_process_time:.4f} seconds"
+                )
 
             ret, frame = media_state.cap.read()
 
@@ -178,11 +160,14 @@ def export_video(
             entropy_values.append(calculate_image_entropy(img))
         avg_entropy = sum(entropy_values) / len(entropy_values)
         bitrate_kbps = max(
-            200, int(avg_entropy * 400) # tuneable bitrate scale based on calculated entropy
+            200,
+            int(
+                avg_entropy * 400
+            ),  # tuneable bitrate scale based on calculated entropy
         )
         bitrate = f"{bitrate_kbps}k"
         print(f"Average entropy: {avg_entropy}")
-        print(f"Estimated bitrate: {bitrate}")
+        print(f"Estimated bitrate: {bitrate}bps")
         num_threads = multiprocessing.cpu_count()
 
         # Two-pass VP9 encoding with passlogfile
@@ -191,6 +176,7 @@ def export_video(
         # fmt: off
         first_pass = [
             "ffmpeg", "-y",
+            "-loglevel", "error",
             "-framerate", str(fps),
             "-i", os.path.join(temp_dir, "frame_%04d.png"),
 
@@ -207,6 +193,8 @@ def export_video(
 
         second_pass = [
             "ffmpeg", "-y",
+            "-loglevel", "error",
+            "-stats",
             "-framerate", str(fps),
             "-i", os.path.join(temp_dir, "frame_%04d.png"),
             "-i", media_state.path,
@@ -232,10 +220,10 @@ def export_video(
         # fmt: on
 
         # Run passes
-        print(f"Running first pass with bitrate {bitrate}...")
+        print("Running dummy first pass...")
         subprocess.run(first_pass, check=True)
 
-        print("Running second pass...")
+        print(f"Running second pass with {bitrate}bps bitrate...")
         subprocess.run(second_pass, check=True)
 
         # Cleanup
@@ -245,5 +233,6 @@ def export_video(
             except FileNotFoundError:
                 pass
         shutil.rmtree(temp_dir)
+        print(f"Finished! Output: {video_output_path}")
         if gui:
             gui()
