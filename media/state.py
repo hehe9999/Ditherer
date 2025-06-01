@@ -4,6 +4,8 @@ from dataclasses import dataclass
 # Third-party imports
 import cv2
 
+
+# Dataclass for holding video information
 @dataclass
 class MediaState:
     frame_rate: float = 0.0
