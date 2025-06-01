@@ -92,6 +92,7 @@ image_tk = None
 resize_after_id = None
 prev_size = None
 
+
 # When 'Load Media' is clicked
 def load_media():
     global loaded_image, image_tk
@@ -148,9 +149,11 @@ def on_resize(event):
 # Bind the resize of window to image update
 window.bind("<Configure>", on_resize)
 
-# Widgets 
+# Widgets
 # Load button
-load_media_button = ctk.CTkButton(load_button_frame, text="Load Media", command=load_media)
+load_media_button = ctk.CTkButton(
+    load_button_frame, text="Load Media", command=load_media
+)
 load_media_button.pack(pady=10)
 
 # Grayscale checkbox
@@ -164,9 +167,7 @@ grayscale_checkbox.pack()
 # Bayer submenu
 submenu_options_list = ["2x2", "4x4", "8x8", "16x16"]
 dropdown_submenu = ctk.CTkComboBox(
-    master=submenu_dropdown_frame,
-    values=submenu_options_list,
-    state="readonly"
+    master=submenu_dropdown_frame, values=submenu_options_list, state="readonly"
 )
 dropdown_submenu.set(submenu_options_list[0])
 dropdown_submenu.pack()
@@ -183,8 +184,8 @@ for i in range(4):
         troughcolor="#282828",
         highlightthickness=0,
         highlightbackground=theme_color,
-        fg="#FFFFFF"
-)
+        fg="#FFFFFF",
+    )
     slide.set(initial_value[i])
     sliders.append(slide)
 sliders[0].grid(row=0, column=0)  # Top left
@@ -194,6 +195,8 @@ sliders[3].grid(row=1, column=1)  # Bottom right
 
 # Algorithm dropdown
 dropdown_submenulabel = ctk.CTkLabel(algo_submenulabel_frame, anchor="w")
+
+
 def show_submenu(selected_value):
     if selected_value == "Bayer":
         floyd_steinberg_submenu.place_forget()
@@ -211,12 +214,10 @@ def show_submenu(selected_value):
         )
         dropdown_submenulabel.configure(text="Weights")
 
+
 options_list = ["Bayer", "Floyd-Steinberg"]
 dropdown = ctk.CTkComboBox(
-    master=dropdown_frame,
-    values=options_list,
-    command=show_submenu,
-    state="readonly"
+    master=dropdown_frame, values=options_list, command=show_submenu, state="readonly"
 )
 dropdown.set(options_list[0])
 dropdown.pack()
@@ -226,7 +227,8 @@ show_submenu(dropdown.get())
 downscale_slider = tk.Scale(
     slider_frame,
     orient="horizontal",
-    from_=1, to=12,
+    from_=1,
+    to=12,
     variable=downscale_factor,
     bg=theme_color,
     troughcolor="#282828",
@@ -243,49 +245,62 @@ progress_bar.place(relx=0.5, rely=0.97, relwidth=0.9, anchor="center")
 
 # Export buttons
 export_png_button = ctk.CTkButton(
-    export_frame, text="Export PNG", command=lambda: export_image(
-        dropdown=dropdown,
+    export_frame,
+    text="Export PNG",
+    command=lambda: export_image(
+        algorithm=dropdown.get(),
         matrix_selection=dropdown_submenu.get(),
         loaded_image=loaded_image,
         grayscale_enabled=grayscale_var.get(),
         downscale=downscale_factor.get(),
         format="png",
-        slider_values = [s.get() for s in sliders],
+        fs_weights=[s.get() for s in sliders],
         progress_callback=progress_var.set,
-        gui=update_window
-        )
+        image_output_path=filedialog.asksaveasfilename(
+            defaultextension=".png", filetypes=[("PNG files", "*.png")]
+        ),
+        update_callback=update_window,
+    ),
 )
 
 export_jpg_button = ctk.CTkButton(
-    export_frame, text="Export JPG", command=lambda: export_image(
-        dropdown=dropdown,
+    export_frame,
+    text="Export JPG",
+    command=lambda: export_image(
+        algorithm=dropdown.get(),
         matrix_selection=dropdown_submenu.get(),
         loaded_image=loaded_image,
         grayscale_enabled=grayscale_var.get(),
         downscale=downscale_factor.get(),
         format="jpeg",
-        slider_values = [s.get() for s in sliders],
+        fs_weights=[s.get() for s in sliders],
         progress_callback=progress_var.set,
-        gui=update_window
-        )
+        image_output_path=filedialog.asksaveasfilename(
+            defaultextension=".png", filetypes=[("PNG files", "*.png")]
+        ),
+        update_callback=update_window,
+    ),
 )
 
 export_video_button = ctk.CTkButton(
-    export_frame, text="Export Video", command=lambda: export_video(
-        dropdown,
-        MediaState,
-        grayscale_var,
+    export_frame,
+    text="Export Video",
+    command=lambda: export_video(
+        algorithm=dropdown.get(),
+        media_state=MediaState,
+        grayscale_enabled=grayscale_var.get(),
         matrix_selection=dropdown_submenu.get(),
         downscale=downscale_factor.get(),
-        slider_values = [s.get() for s in sliders],
+        fs_weights=[s.get() for s in sliders],
         progress_callback=progress_var.set,
-        video_output_path = filedialog.asksaveasfilename(
-        defaultextension=".webm", filetypes=[("(.webm) files", "*.webm")]
+        video_output_path=filedialog.asksaveasfilename(
+            defaultextension=".webm", filetypes=[("(.webm) files", "*.webm")]
+        ),
+        update_callback=update_window,
     ),
-        gui=update_window
-    )
 )
 
+# Export button(s) handler
 def export_buttons(*args):
     if MediaState.is_video:
         export_jpg_button.pack_forget()
@@ -296,10 +311,12 @@ def export_buttons(*args):
         export_png_button.pack(side=ctk.RIGHT, expand=True)
         export_jpg_button.pack(side=ctk.LEFT, expand=True)
 
+# Function to allow exporter to update GUI
 def update_window():
     window.update_idletasks()
 
     window.after(500, lambda: progress_var.set(0))
+
 
 # Tinker Event loop
 window.mainloop()
