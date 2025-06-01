@@ -5,7 +5,7 @@ import cv2
 from media.state import MediaState
 
 
-
+# Function for loading video files and updating the MediaState class
 def load_video(path):
     MediaState.is_video = True
     MediaState.path = path
