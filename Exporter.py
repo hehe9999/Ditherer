@@ -14,73 +14,82 @@ from PIL import Image
 # Local imports
 from dither import fs_dither, apply_bayer_dithering, apply_grayscale
 
-
+# Helper function for grabbing Bayer matrices
 def get_matrix_size(selection: str):
     matrix_sizes = {"2x2": 2, "4x4": 4, "8x8": 8, "16x16": 16}
     return matrix_sizes.get(selection)
 
 
+# Main export function for images
 def export_image(
-    algorithm,
-    matrix_selection,
-    loaded_image,
-    grayscale_enabled,
-    downscale,
-    format,
-    slider_values,
-    progress_callback,
-    image_output_path,
-    gui=None,
+    algorithm, # user algorithm selection
+    matrix_selection, # Bayer matrix size
+    loaded_image, # input image
+    grayscale_enabled, # grayscale toggle
+    downscale, # downscale factor
+    format, # output format
+    fs_weights, # Floyd-Steinberg weights
+    progress_callback, # progress callback
+    image_output_path, # output path for image
+    update_callback=None, # update callback function (if GUI is used)
 ):
-    if loaded_image is None:
+    if loaded_image is None: # check if image is loaded
         print("No image loaded")
         return
+    
     progress_callback(10 / 100)
 
+    if grayscale_enabled: # convert to grayscale before checking dithering algorithm
+        loaded_image = apply_grayscale(loaded_image)
+
+    progress_callback(30 / 100)
+
+    # Apply the selected algorithm
     if algorithm == "Bayer":
         matrix_size = get_matrix_size(matrix_selection)
-        if grayscale_enabled:
-            loaded_image = apply_grayscale(loaded_image)
         dithered = apply_bayer_dithering(loaded_image, downscale, matrix_size)
 
     elif algorithm == "Floyd-Steinberg":
-        if grayscale_enabled:
-            grayscale = apply_grayscale(loaded_image)
-            loaded_image = grayscale
-        progress_callback(30 / 100)
-        dithered = fs_dither(loaded_image, downscale, *slider_values)
-
+        dithered = fs_dither(loaded_image, downscale, *fs_weights)
+    
     else:
         raise ValueError(f"Unsupported algorithm: {algorithm}")
 
     progress_callback(50 / 100)
 
-    if image_output_path:
+    if image_output_path: # check that output path actually exists
         dithered.save(image_output_path, format=format)
+    else:
+        print("No output path provided. Image was not saved.")
 
     progress_callback(100 / 100)
     print(f"Finished! Output: {image_output_path}")
-    if gui:
-        gui()
+
+    # Update the GUI (if function was called from GUI)
+    if callable(update_callback):
+        update_callback()
 
 
+# Main export function for videos
 def export_video(
-    algorithm,
-    media_state,
-    grayscale_enabled,
-    matrix_selection,
-    downscale,
-    slider_values,
-    progress_callback,
-    video_output_path,
-    gui=None,
-    enable_printing=None,
+    algorithm, # user algorithm selection
+    media_state, # MediaState class
+    grayscale_enabled, # grayscale toggle
+    matrix_selection, # Bayer matrix size
+    downscale, # downscale factor
+    fs_weights, # Floyd-Steinberg weights
+    progress_callback, # progress callback
+    video_output_path, # output path for video
+    update_callback=None, # update callback function (if GUI is used)
+    enable_printing=None, # toggle to enable extra debug printing
 ):
 
-    if video_output_path:
+    if video_output_path: # check that output path actually exists
         fps = media_state.frame_rate
+
         # Create temporary directory for compressed frames
         temp_dir = tempfile.mkdtemp()
+
         if enable_printing:
             print(f"Temporary directory created: {temp_dir}")
         frame_count = 0
@@ -92,7 +101,7 @@ def export_video(
         # Start measuring time
         total_start_time = time.time()
 
-        while ret:
+        while ret: # loop through frames
             if enable_printing:
                 # Start timing frame processing
                 frame_start_time = time.time()
@@ -100,28 +109,24 @@ def export_video(
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             img_pil = Image.fromarray(rgb_frame)
 
+            # Apply grayscale before dithering
+            if grayscale_enabled:
+                img_pil = apply_grayscale(img_pil)
+                img_pil = img_pil.convert("RGB")
+
             # Apply dithering
             if algorithm == "Bayer":
                 matrix_size = get_matrix_size(matrix_selection)
-                if grayscale_enabled:
-                    grayscale = apply_grayscale(img_pil)
-                    dithered = apply_bayer_dithering(grayscale, downscale, matrix_size)
-                    dithered = dithered.convert("RGB")
-                else:
-                    dithered = apply_bayer_dithering(img_pil, downscale, matrix_size)
+                dithered = apply_bayer_dithering(img_pil, downscale, matrix_size)
 
             elif algorithm == "Floyd-Steinberg":
-                if grayscale_enabled:
-                    grayscale = apply_grayscale(img_pil)
-                    dithered = fs_dither(grayscale, downscale, *slider_values)
-                    dithered = dithered.convert("RGB")
-                else:
-                    dithered = fs_dither(img_pil, downscale, *slider_values)
+                    dithered = fs_dither(img_pil, downscale, *fs_weights)
 
             # Save frame as compressed PNG
             frame_path = os.path.join(temp_dir, f"frame_{frame_count:04d}.png")
             dithered.save(frame_path, format="PNG", optimize=True)
 
+            # Update frame count and progress callback
             frame_count += 1
             progress_callback(frame_count / media_state.total_frames)
 
@@ -234,5 +239,7 @@ def export_video(
                 pass
         shutil.rmtree(temp_dir)
         print(f"Finished! Output: {video_output_path}")
-        if gui:
-            gui()
+
+        # Update the GUI (if function was called from GUI)
+        if callable(update_callback):
+            update_callback()
