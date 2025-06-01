@@ -7,18 +7,18 @@ import numpy as np
 import numba
 
 
-# Define grayscale conversion
+# Grayscale conversion function
 def apply_grayscale(image):
     return image.convert("L")
 
 
-# Predefined Bayer matrices
+# Helper function for Bayer matrix selection from list of predetermined arrays
 bayer_matrices = {}
 for size in (2, 4, 8, 16):
     bayer_matrices[size] = np.load(f"matrices/bayer{size}x{size}.npy")
 
 
-# Define Bayer Dithering with matrix resizing
+# Function for getting a tiled Bayer matrix with caching
 @lru_cache(maxsize=4)
 def get_tiled_bayer_matrix(matrix_size: int, h: int, w: int) -> np.ndarray:
     bayer = bayer_matrices.get(matrix_size, bayer_matrices[2])
@@ -26,7 +26,7 @@ def get_tiled_bayer_matrix(matrix_size: int, h: int, w: int) -> np.ndarray:
     return tiled[:h, :w]
 
 
-# Numba JIT compiled Bayer Dithering
+# Numba JIT compiled Bayer Dithering function
 @numba.njit
 def bayer_dither(image: np.ndarray, threshold_map: np.ndarray) -> np.ndarray:
     h, w = image.shape
@@ -37,6 +37,7 @@ def bayer_dither(image: np.ndarray, threshold_map: np.ndarray) -> np.ndarray:
     return out
 
 
+# Function for applying Bayer dithering to an image/frame
 def apply_bayer_dithering(
     image: Image.Image, scale_factor: int, matrix_size: int
 ) -> Image.Image:
@@ -66,7 +67,7 @@ def apply_bayer_dithering(
     return upscaled
 
 
-# Numba JIT compiled Floyd-Steinberg dithering (grayscale)
+# Numba JIT compiled Floyd-Steinberg dithering function (grayscale)
 @numba.njit
 def fs_dither_grayscale(dithered, width, height, r, dl, d, dr):
     for y in range(height):
@@ -86,7 +87,7 @@ def fs_dither_grayscale(dithered, width, height, r, dl, d, dr):
     return dithered
 
 
-# Numba JIT compiled Floyd-Steinberg dithering (rgb)
+# Numba JIT compiled Floyd-Steinberg dithering function (rgb)
 @numba.njit
 def fs_dither_rgb(dithered, width, height, channels, r, dl, d, dr):
     for c in range(channels):
@@ -107,6 +108,7 @@ def fs_dither_rgb(dithered, width, height, channels, r, dl, d, dr):
     return dithered
 
 
+# Floyd-Steinberg dithering applicator function
 def fs_dither(image: Image.Image, scale_factor, r, dl, d, dr) -> Image.Image:
     normalized_width, normalized_height = image.size
     small_size = (normalized_width // scale_factor, normalized_height // scale_factor)
