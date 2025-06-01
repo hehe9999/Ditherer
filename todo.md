@@ -13,7 +13,6 @@
 - [ ] Clean up Ditherer_gui.py for better readability
 - [ ] Drag and drop functionality
 - [ ] Optimize optimize optimize!
-- [ ] Discord webhook integration
 
 
 
@@ -25,6 +24,7 @@
 - [ ] Multiple files support (dither multiple files at once?)
 - [ ] Presets for options
 - [ ] Ability to change FFmpeg command line arguments (unlikely due to file sizes but interesting)
+- [ ] Discord webhook integration
 - [ ] Output file size estimation?
 
 
