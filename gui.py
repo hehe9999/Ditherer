@@ -1,5 +1,6 @@
 # Standard library imports
 import os
+import threading
 
 # Third-party imports
 import cv2
@@ -8,7 +9,7 @@ from PIL import Image, ImageTk
 # Local imports
 from media.image_utils import load_image, resize_to_fit
 from media.state import MediaState
-from exporter import export_image, export_video
+from exporter import export_image, export_video, cancel_export
 from media.video_utils import load_video
 
 # Tkinter imports
@@ -34,7 +35,11 @@ load_button_frame.place(relx=0.5, rely=0.05, anchor="center")
 
 # Grayscale checkbox frame
 grayscale_frame = ctk.CTkFrame(window, fg_color=theme_color)
-grayscale_frame.place(relx=0.5, rely=0.9, relwidth=0.4, relheight=0.1, anchor="center")
+grayscale_frame.place(relx=0.5, rely=0.895, relwidth=0.4, relheight=0.1, anchor="center")
+
+# Cancel button frame
+cancel_frame = ctk.CTkFrame(window, fg_color=theme_color)
+cancel_frame.place(relx=0.5, rely=0.95, relwidth=0.3, relheight=0.05, anchor="center")
 
 # Algo dropdown frame
 dropdown_frame = ctk.CTkFrame(window, fg_color=theme_color)
@@ -45,10 +50,9 @@ floyd_steinberg_submenu = ctk.CTkFrame(window, fg_color=theme_color)
 
 submenu_dropdown_frame = ctk.CTkFrame(window, fg_color=theme_color)
 
-
 # Export buttons frame
 export_frame = ctk.CTkFrame(window, fg_color=theme_color)
-export_frame.place(relx=0.5, rely=0.92, relwidth=0.6, anchor="center")
+export_frame.place(relx=0.5, rely=0.90, relwidth=0.6, anchor="center")
 
 # Image frame
 image_frame = ctk.CTkFrame(window)
@@ -58,7 +62,7 @@ image_frame.pack_propagate(False)
 # Slider frame
 downscale_factor = ctk.IntVar(value=2)
 slider_frame = ctk.CTkFrame(window, fg_color=theme_color)
-slider_frame.place(relx=0.5, rely=0.80, relwidth=0.7, relheight=0.1, anchor="center")
+slider_frame.place(relx=0.5, rely=0.80, relwidth=0.7, relheight=0.08, anchor="center")
 
 # Label to display image
 image_label = ctk.CTkLabel(image_frame, text="")
@@ -86,7 +90,7 @@ algo_submenulabel_frame.place(
     relx=0.5, rely=0.59, relwidth=0.3, relheight=0.03, anchor="center"
 )
 
-# Global variables and media dataclass
+# Global variables
 loaded_image = None
 image_tk = None
 resize_after_id = None
@@ -109,6 +113,7 @@ def load_media():
             update_image()
             export_buttons()
         elif ext in video_extensions:
+            MediaState.is_video = True
             load_video(path)
             cap = MediaState.cap
             ret, frame = cap.read()
@@ -163,6 +168,15 @@ grayscale_checkbox = ctk.CTkCheckBox(
 )
 grayscale_checkbox.pack()
 
+# Cancel button and helper function
+def cancel_button_clicked():
+    cancel_export()
+    cancel_button.pack_forget()
+    
+cancel_button = ctk.CTkButton(
+    cancel_frame, text="Cancel", command=cancel_button_clicked
+)
+
 # Algo submenus
 # Bayer submenu
 submenu_options_list = ["2x2", "4x4", "8x8", "16x16"]
@@ -193,7 +207,7 @@ sliders[1].grid(row=0, column=1)  # Top right
 sliders[2].grid(row=1, column=0)  # Bottom left
 sliders[3].grid(row=1, column=1)  # Bottom right
 
-# Algorithm dropdown
+# Algo submenu label
 dropdown_submenulabel = ctk.CTkLabel(algo_submenulabel_frame, anchor="w")
 
 
@@ -243,11 +257,9 @@ progress_var = ctk.DoubleVar()
 progress_bar = ctk.CTkProgressBar(window, variable=progress_var)
 progress_bar.place(relx=0.5, rely=0.97, relwidth=0.9, anchor="center")
 
-# Export buttons
-export_png_button = ctk.CTkButton(
-    export_frame,
-    text="Export PNG",
-    command=lambda: export_image(
+# Export helper functions
+def export_png_clicked(): # PNG
+    export_image(
         algorithm=dropdown.get(),
         matrix_selection=dropdown_submenu.get(),
         loaded_image=loaded_image,
@@ -260,13 +272,11 @@ export_png_button = ctk.CTkButton(
             defaultextension=".png", filetypes=[("PNG files", "*.png")]
         ),
         update_callback=update_window,
-    ),
-)
+    )
+    cancel_button.pack()
 
-export_jpg_button = ctk.CTkButton(
-    export_frame,
-    text="Export JPG",
-    command=lambda: export_image(
+def export_jpg_clicked(): # JPG
+    export_image(
         algorithm=dropdown.get(),
         matrix_selection=dropdown_submenu.get(),
         loaded_image=loaded_image,
@@ -279,13 +289,12 @@ export_jpg_button = ctk.CTkButton(
             defaultextension=".png", filetypes=[("PNG files", "*.png")]
         ),
         update_callback=update_window,
-    ),
-)
+    )
+    cancel_button.pack()
 
-export_video_button = ctk.CTkButton(
-    export_frame,
-    text="Export Video",
-    command=lambda: export_video(
+def export_video_clicked(): # Video
+
+    export_video(
         algorithm=dropdown.get(),
         media_state=MediaState,
         grayscale_enabled=grayscale_var.get(),
@@ -297,7 +306,30 @@ export_video_button = ctk.CTkButton(
             defaultextension=".webm", filetypes=[("(.webm) files", "*.webm")]
         ),
         update_callback=update_window,
-    ),
+    )
+def export_video_helper():
+
+    thread = threading.Thread(target=export_video_clicked)
+    thread.start()
+    cancel_button.pack()
+
+# Export buttons
+export_png_button = ctk.CTkButton(
+    export_frame,
+    text="Export PNG",
+    command=export_png_clicked
+)
+
+export_jpg_button = ctk.CTkButton(
+    export_frame,
+    text="Export JPG",
+    command=export_jpg_clicked
+)
+
+export_video_button = ctk.CTkButton(
+    export_frame,
+    text="Export Video",
+    command=export_video_helper
 )
 
 # Export button(s) handler

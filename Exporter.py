@@ -32,6 +32,7 @@ def reset_cancel_flag():
 
 def check_cancel():
     if cancel_flag.is_set():
+        reset_cancel_flag()
         raise RuntimeError("Export cancelled.")
 
 # Main export function for images
@@ -46,7 +47,6 @@ def export_image(
     progress_callback, # progress callback
     image_output_path, # output path for image
     update_callback=None, # update callback function (if GUI is used)
-    cancel_flag=cancel_flag # cancel flag for export process
 ):
     if loaded_image is None: # check if image is loaded
         print("No image loaded")
@@ -107,7 +107,6 @@ def export_video(
     video_output_path, # output path for video
     update_callback=None, # update callback function (if GUI is used)
     enable_printing=None, # toggle to enable extra debug printing
-    cancel_flag=cancel_flag # cancel flag for export process
 ):
 
     if video_output_path: # check that output path actually exists
@@ -129,6 +128,9 @@ def export_video(
             total_start_time = time.time()
 
             while ret: # loop through frames
+                # Check if cancel flag is set
+                check_cancel()
+
                 if enable_printing:
                     # Start timing frame processing
                     frame_start_time = time.time()
