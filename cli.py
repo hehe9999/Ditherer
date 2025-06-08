@@ -5,11 +5,20 @@ import sys
 import time
 
 # Local imports
-from exporter import export_image, export_video
+from exporter import export_image, export_video, cancel_export
 from media.image_utils import load_image
 from media.video_utils import load_video
 from media.state import MediaState
 
+
+# Helper function for cancelling processing
+def listen_for_cancel():
+    print("Press 'c' then Enter to cancel...")
+    while True:
+        key = input()
+        if key.strip().lower() == 'c':
+            cancel_export()
+            break
 
 # Timer for video ETA
 def format_eta(seconds):
