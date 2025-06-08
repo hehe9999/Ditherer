@@ -1,7 +1,7 @@
 # Ditherer
-**A fork of [MOPHEADART's Python-based ditherer](https://github.com/MOPHEADART/Ditherer)**
-
 ![Python](https://img.shields.io/badge/python-3.13+-blue?logo=python) [![License](https://img.shields.io/github/license/hehe9999/Ditherer)](LICENSE) ![SLSA Level 3](https://img.shields.io/badge/SLSA-3-blueviolet?logo=github&logoColor=white) ![Windows Release](https://github.com/hehe9999/Ditherer/actions/workflows/release.yml/badge.svg) ![GPG Signed](https://img.shields.io/badge/Releases-Signed%20with%20GPG-4e8ccf?logo=gnupg&logoColor=white) ![Checksummed](https://img.shields.io/badge/Releases-Checksummed%20(SHA256)-green?logo=files&logoColor=white)
+
+**A fork of [MOPHEADART's Python-based ditherer](https://github.com/MOPHEADART/Ditherer)**
 
 ## Table of Contents
 - [What is dithering, and why is it useful?](#what-is-dithering-and-why-is-it-useful)
