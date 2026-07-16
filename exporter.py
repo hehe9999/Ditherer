@@ -1,6 +1,7 @@
 # Standard library imports
 import os
 import subprocess
+import tempfile
 import time
 from threading import Event
 
@@ -192,9 +193,11 @@ def export_video(
             # pushes bits into the busiest, most block-prone regions.
             quality_flags = ["-tune", "grain", "-aq-mode", "3", "-aq-strength", "1.0"]
 
-        # Define temporary file names
-        temp_intermediate = "temp_intermediate.mp4"
-        pass_log_prefix = "temp_2pass_log"
+        # Define temporary file names (kept out of the project dir so the
+        # working directory stays clean and exports work from any CWD).
+        temp_dir = tempfile.gettempdir()
+        temp_intermediate = os.path.join(temp_dir, "ditherer_intermediate.mp4")
+        pass_log_prefix = os.path.join(temp_dir, "ditherer_2pass_log")
 
         # --- STEP 1: EXPORT HIGH-SPEED, NEAR-LOSSLESS INTERMEDIATE ---
         # Python writes directly to this. 'ultrafast' + crf 0 keeps the dither

@@ -33,5 +33,10 @@ testvideo.mp4
 testvideo1.mp4
 nextupdate.md
 
+# Development helpers (local only, never committed)
+dev/
+Test.png
+TestRGB.png
+
 # Other
 .env

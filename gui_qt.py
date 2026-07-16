@@ -123,6 +123,7 @@ class DithererWindow(QMainWindow):
 
         ext = os.path.splitext(path)[1].lower()
         if ext in IMAGE_EXTENSIONS:
+            media_state.reset()
             media_state.is_video = False
             self.loaded_image = load_image(path)
         elif ext in VIDEO_EXTENSIONS:

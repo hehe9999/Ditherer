@@ -1,4 +1,5 @@
 # Standard library imports
+import math
 from functools import lru_cache
 
 import numba
@@ -26,7 +27,7 @@ for size in (2, 4, 8, 16):
 @lru_cache(maxsize=4)
 def get_tiled_bayer_matrix(matrix_size: int, h: int, w: int) -> np.ndarray:
     bayer = bayer_matrices.get(matrix_size, bayer_matrices[2])
-    tiled = np.tile(bayer, (-(-h // matrix_size), -(-w // matrix_size)))
+    tiled = np.tile(bayer, (math.ceil(h / matrix_size), math.ceil(w / matrix_size)))
     return tiled[:h, :w]
 
 
@@ -61,7 +62,7 @@ def apply_bayer_dithering(image: Image.Image, scale_factor: int, matrix_size: in
         for i in range(3):
             dithered[..., i] = bayer_dither(downscaled[..., i], threshold_map)
 
-    upscaled = Image.fromarray((dithered * 1).astype(np.uint8)).resize(
+    upscaled = Image.fromarray(dithered.astype(np.uint8)).resize(
         (width, height), resample=Image.NEAREST
     )
     return upscaled
