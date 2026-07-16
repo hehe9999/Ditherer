@@ -24,13 +24,14 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 
-# Local imports
-from ui_loader import load_ui_file
+from exporter import cancel_export, export_image, export_video, reset_cancel_flag
 from media.image_utils import load_image, resize_to_fit
 from media.state import media_state
 from media.video_utils import load_video
-from exporter import export_image, export_video, cancel_export, reset_cancel_flag
 from resources import resource_path
+
+# Local imports
+from ui_loader import load_ui_file
 
 UI_PATH = resource_path("ui.ui")
 
@@ -205,9 +206,7 @@ class DithererWindow(QMainWindow):
         self._set_row_visible("fs_label", "fs_settings_subcontainer", fs or drunk_sel)
         self._set_row_visible("drunk_label", "drunk_settings_container", drunk_sel)
         # Video settings only make sense once a video is loaded.
-        self._set_row_visible(
-            "video_label", "video_settings_container", media_state.is_video
-        )
+        self._set_row_visible("video_label", "video_settings_container", media_state.is_video)
 
     def _set_row_visible(self, label_name, field_name, visible):
         for name in (label_name, field_name):
@@ -318,9 +317,7 @@ class DithererWindow(QMainWindow):
             cancel_export()
             return
 
-        out_path, _ = QFileDialog.getSaveFileName(
-            self, "Save Video", "", "MP4 files (*.mp4)"
-        )
+        out_path, _ = QFileDialog.getSaveFileName(self, "Save Video", "", "MP4 files (*.mp4)")
         if not out_path:
             return
 
@@ -328,9 +325,7 @@ class DithererWindow(QMainWindow):
         kwargs = self._common_kwargs()
         kwargs.update(
             media_state=media_state,
-            drunkenness_level=(
-                self.w["constant_slider"].value() if algo == "Drunk" else None
-            ),
+            drunkenness_level=(self.w["constant_slider"].value() if algo == "Drunk" else None),
             drunk_settings=self._drunk_settings() if algo == "Drunk" else None,
             video_output_path=out_path,
             update_callback=None,

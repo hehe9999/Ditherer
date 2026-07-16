@@ -1,15 +1,15 @@
 # Standard library imports
-import time
-import subprocess
-from threading import Event
 import os
+import subprocess
+import time
+from threading import Event
 
 # Third-party imports
 import cv2
 from PIL import Image
 
 # Local imports
-from dither import fs_dither, apply_bayer_dithering, apply_grayscale, drunk
+from dither import apply_bayer_dithering, apply_grayscale, drunk, fs_dither
 
 
 # Helper function for grabbing Bayer matrices
@@ -123,9 +123,7 @@ def export_video(
             if grayscale_enabled:
                 img = apply_grayscale(img).convert("RGB")
             if algorithm == "Bayer":
-                out = apply_bayer_dithering(
-                    img, downscale, get_matrix_size(matrix_selection)
-                )
+                out = apply_bayer_dithering(img, downscale, get_matrix_size(matrix_selection))
             elif algorithm == "Floyd-Steinberg":
                 out = fs_dither(img, downscale, *fs_weights)
             elif algorithm == "Drunk":

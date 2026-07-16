@@ -1,6 +1,6 @@
 # Standard library imports
-from dataclasses import dataclass
 import typing
+from dataclasses import dataclass
 
 # Third-party imports
 import cv2

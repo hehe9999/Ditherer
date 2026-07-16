@@ -4,11 +4,12 @@ Runtime UI loader with widget access for Qt Designer .ui files.
 This module provides functionality to load UI files at runtime and access specific widgets.
 """
 
-from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, QIODevice
-from PySide6.QtWidgets import QApplication, QWidget
-import sys
 import os
+import sys
+
+from PySide6.QtCore import QFile, QIODevice
+from PySide6.QtUiTools import QUiLoader
+from PySide6.QtWidgets import QApplication, QWidget
 
 
 def load_ui_file(ui_path, parent=None):
@@ -26,7 +27,7 @@ def load_ui_file(ui_path, parent=None):
     ui_file = QFile(ui_path)
 
     if not ui_file.open(QIODevice.ReadOnly):
-        raise IOError(f"Cannot open UI file: {ui_path}")
+        raise OSError(f"Cannot open UI file: {ui_path}")
 
     # Load the UI
     widget = loader.load(ui_file, parent)
@@ -37,9 +38,7 @@ def load_ui_file(ui_path, parent=None):
 
     # Collect all widgets with object names
     widgets = {
-        child.objectName(): child
-        for child in widget.findChildren(QWidget)
-        if child.objectName()
+        child.objectName(): child for child in widget.findChildren(QWidget) if child.objectName()
     }
     # Add the main widget itself if it has an object name
     if widget.objectName():

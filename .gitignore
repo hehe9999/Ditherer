@@ -8,6 +8,9 @@ dist-out/
 *.pyd
 __pycache__/
 
+# Tooling caches
+.ruff_cache/
+
 # Virtual environments
 .venv/
 venv/

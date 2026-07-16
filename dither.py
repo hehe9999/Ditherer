@@ -1,10 +1,11 @@
 # Standard library imports
 from functools import lru_cache
 
+import numba
+import numpy as np
+
 # Third-party imports
 from PIL import Image
-import numpy as np
-import numba
 
 # Local imports
 from resources import resource_path
@@ -41,15 +42,11 @@ def bayer_dither(image: np.ndarray, threshold_map: np.ndarray) -> np.ndarray:
 
 
 # Function for applying Bayer dithering to an image/frame
-def apply_bayer_dithering(
-    image: Image.Image, scale_factor: int, matrix_size: int
-) -> Image.Image:
+def apply_bayer_dithering(image: Image.Image, scale_factor: int, matrix_size: int) -> Image.Image:
     width, height = image.size
     downscaled = (
         np.array(
-            image.resize(
-                (width // scale_factor, height // scale_factor), resample=Image.NEAREST
-            )
+            image.resize((width // scale_factor, height // scale_factor), resample=Image.NEAREST)
         ).astype(np.float32)
         / 255.0
     )
@@ -132,19 +129,13 @@ def fs_dither(image: Image.Image, scale_factor, r, dl, d, dr) -> Image.Image:
     small_size = (normalized_width // scale_factor, normalized_height // scale_factor)
 
     if image.mode == "L":
-        dithered = np.array(image.resize(small_size, resample=Image.NEAREST)).astype(
-            np.float32
-        )
+        dithered = np.array(image.resize(small_size, resample=Image.NEAREST)).astype(np.float32)
 
-        dithered = fs_dither_grayscale(
-            dithered, dithered.shape[1], dithered.shape[0], r, dl, d, dr
-        )
+        dithered = fs_dither_grayscale(dithered, dithered.shape[1], dithered.shape[0], r, dl, d, dr)
         result = Image.fromarray(np.uint8(np.clip(dithered, 0, 255)))
 
     elif image.mode == "RGB":
-        dithered = np.array(image.resize(small_size, resample=Image.NEAREST)).astype(
-            np.float32
-        )
+        dithered = np.array(image.resize(small_size, resample=Image.NEAREST)).astype(np.float32)
         dithered = fs_dither_rgb(
             dithered,
             dithered.shape[1],  # width

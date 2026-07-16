@@ -5,10 +5,10 @@ import sys
 import time
 
 # Local imports
-from exporter import export_image, export_video, cancel_export
+from exporter import cancel_export, export_image, export_video
 from media.image_utils import load_image
-from media.video_utils import load_video
 from media.state import MediaState
+from media.video_utils import load_video
 
 
 # Helper function for cancelling processing
@@ -83,14 +83,10 @@ def main():
     args = parser.parse_args()
 
     if args.algorithm.lower() != "bayer" and "--matrix_size" in sys.argv:
-        parser.error(
-            "The --matrix_size option is only supported with the Bayer algorithm"
-        )
+        parser.error("The --matrix_size option is only supported with the Bayer algorithm")
 
     if args.algorithm.lower() != "floyd-steinberg" and "--weights" in sys.argv:
-        parser.error(
-            "The --weights option is only supported with the Floyd-Steinberg algorithm"
-        )
+        parser.error("The --weights option is only supported with the Floyd-Steinberg algorithm")
 
     if args.downscale < 1 or args.downscale > 12:
         parser.error("Downscale factor must be between 1 and 12")

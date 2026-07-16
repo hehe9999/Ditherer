@@ -3,10 +3,10 @@ import subprocess
 import time
 from pathlib import Path
 
-# Third-party imports
-from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+# Third-party imports
+from watchdog.observers import Observer
 
 WATCH_DIR = Path(__file__).resolve().parent.parent
 ENTRY_POINT = "gui.py"
