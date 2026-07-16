@@ -16,9 +16,10 @@ def listen_for_cancel():
     print("Press 'c' then Enter to cancel...")
     while True:
         key = input()
-        if key.strip().lower() == 'c':
+        if key.strip().lower() == "c":
             cancel_export()
             break
+
 
 # Timer for video ETA
 def format_eta(seconds):

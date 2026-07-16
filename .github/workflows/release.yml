@@ -31,9 +31,13 @@ jobs:
 
       - name: Build binary
         run: |
-          pyinstaller --onefile --noconsole gui.py
+          pyinstaller --onefile --noconsole `
+            --name dither `
+            --add-data "ui.ui;." `
+            --add-data "matrices;matrices" `
+            gui_qt.py
           mkdir dist-out
-          Copy-Item dist\gui.exe dist-out\dither.exe
+          Copy-Item dist\dither.exe dist-out\dither.exe
 
       - name: Generate SHA256 subjects
         id: hash

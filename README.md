@@ -1,5 +1,5 @@
 # Ditherer
-![Python](https://img.shields.io/badge/python-3.13+-blue?logo=python) [![License](https://img.shields.io/github/license/hehe9999/Ditherer)](LICENSE) ![SLSA Level 3](https://img.shields.io/badge/SLSA-3-blueviolet?logo=github&logoColor=white) ![Windows Release](https://github.com/hehe9999/Ditherer/actions/workflows/release.yml/badge.svg) ![GPG Signed](https://img.shields.io/badge/Releases-Signed%20with%20GPG-4e8ccf?logo=gnupg&logoColor=white) ![Checksummed](https://img.shields.io/badge/Releases-Checksummed%20(SHA256)-green?logo=files&logoColor=white)
+![Python](https://img.shields.io/badge/python-3.12+-blue?logo=python) [![License](https://img.shields.io/github/license/hehe9999/Ditherer)](LICENSE) ![SLSA Level 3](https://img.shields.io/badge/SLSA-3-blueviolet?logo=github&logoColor=white) ![Windows Release](https://github.com/hehe9999/Ditherer/actions/workflows/release.yml/badge.svg) ![GPG Signed](https://img.shields.io/badge/Releases-Signed%20with%20GPG-4e8ccf?logo=gnupg&logoColor=white) ![Checksummed](https://img.shields.io/badge/Releases-Checksummed%20(SHA256)-green?logo=files&logoColor=white)
 
 **A fork of [MOPHEADART's Python-based ditherer](https://github.com/MOPHEADART/Ditherer)**
 
@@ -38,7 +38,7 @@ This project is a Python-based dithering tool that can be used on a variety of m
 6. Export your dithered file using the button(s) at the bottom.
 
 ### Using the CLI:
-**To do this, you will need [Python](https://www.python.org/downloads/) 3.13 or higher installed to PATH.**
+**To do this, you will need [Python](https://www.python.org/downloads/) 3.12 or higher installed to PATH.**
 1. Clone this repo: `git clone https://github.com/hehe9999/Ditherer.git`
 2. Open **Command Prompt** in the directory, or navigate to it.
 3. Install the `requirements.txt` using `pip`. `pip install -r requirements.txt`

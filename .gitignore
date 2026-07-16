@@ -1,18 +1,34 @@
 # PyInstaller build artifacts
 build/
 dist/
-__pycache__/
+dist-out/
 *.spec
 *.pyc
 *.pyo
 *.pyd
+__pycache__/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE / editor
+.idea/
+.vscode/
 
 # Log files
 *.log
 
+# ffmpeg export temp artifacts
+temp_intermediate.mp4
+temp_2pass_log*
+
+# Local test media / scratch
+test1.png
+testvideo.mp4
+testvideo1.mp4
+nextupdate.md
+
 # Other
 .env
-testvideo.mp4
-Test.png
-TestRGB.png
-nextupdate.md

@@ -1,0 +1,841 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>window</class>
+ <widget class="QMainWindow" name="window">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>900</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>600</width>
+    <height>900</height>
+   </size>
+  </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
+  <property name="windowTitle">
+   <string>Ditherer</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>Test.png</normaloff>Test.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <layout class="QHBoxLayout" name="load_media_container">
+      <item>
+       <widget class="QPushButton" name="load_media_btn">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>90</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>90</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Load Media</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="image_preview">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="scaledContents">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QFormLayout" name="settingscontainer">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+      </property>
+      <property name="labelAlignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+      <property name="formAlignment">
+       <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="algotext">
+        <property name="text">
+         <string>Dithering Algorithm</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="algocontainer">
+        <item>
+         <widget class="QComboBox" name="algo_combo">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <item>
+           <property name="text">
+            <string>Bayer</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Floyd-Steinberg</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Drunk</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="algospacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="bayer_label">
+        <property name="text">
+         <string>Bayer Settings</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="bayer_settings_container">
+        <item>
+         <widget class="QFrame" name="matrix_frame">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Shape::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Shadow::Raised</enum>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <widget class="QLabel" name="matrixtext">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Matrix Size</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="matrix_combo">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <item>
+              <property name="text">
+               <string>2x2</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>4x4</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>8x8</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>16x16</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="matrix_spacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Policy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="fs_label">
+        <property name="text">
+         <string>Floyd-Steinberg Settings</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <layout class="QHBoxLayout" name="fs_settings_container">
+        <item>
+         <layout class="QGridLayout" name="fs_settings_subcontainer">
+          <item row="1" column="5">
+           <widget class="QSlider" name="dlsliderfs">
+            <property name="minimum">
+             <number>-24</number>
+            </property>
+            <property name="maximum">
+             <number>24</number>
+            </property>
+            <property name="value">
+             <number>3</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QSlider" name="dsliderfs">
+            <property name="minimum">
+             <number>-24</number>
+            </property>
+            <property name="maximum">
+             <number>24</number>
+            </property>
+            <property name="sliderPosition">
+             <number>5</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="4">
+           <widget class="QLabel" name="dr_counter">
+            <property name="text">
+             <string>1</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="rlabelfs">
+            <property name="text">
+             <string>Right:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="4">
+           <widget class="QLabel" name="dl_counter">
+            <property name="text">
+             <string>3</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QLabel" name="dllabelfs">
+            <property name="text">
+             <string>Down Left:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QSlider" name="rsliderfs">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="inputMethodHints">
+             <set>Qt::InputMethodHint::ImhNone</set>
+            </property>
+            <property name="minimum">
+             <number>-24</number>
+            </property>
+            <property name="maximum">
+             <number>24</number>
+            </property>
+            <property name="value">
+             <number>7</number>
+            </property>
+            <property name="tracking">
+             <bool>true</bool>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::TickPosition::NoTicks</enum>
+            </property>
+            <property name="tickInterval">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="r_counter">
+            <property name="text">
+             <string>7</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="d_counter">
+            <property name="text">
+             <string>5</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="dlabelfs">
+            <property name="text">
+             <string>Down:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3">
+           <widget class="QLabel" name="drlabelfs">
+            <property name="text">
+             <string>Down Right:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="5">
+           <widget class="QSlider" name="drsliderfs">
+            <property name="minimum">
+             <number>-24</number>
+            </property>
+            <property name="maximum">
+             <number>24</number>
+            </property>
+            <property name="sliderPosition">
+             <number>1</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="drunk_label">
+        <property name="text">
+         <string>Drunk Settings</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <layout class="QVBoxLayout" name="drunk_settings_container">
+        <item>
+         <layout class="QHBoxLayout" name="frame_shift_container">
+          <item>
+           <widget class="QLabel" name="frame_label">
+            <property name="text">
+             <string>Frames per shift:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="frame_counter">
+            <property name="text">
+             <string>1</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="frame_slider">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>60</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="drunk_settings_subcontainer">
+          <item>
+           <widget class="QCheckBox" name="random_check">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Randomness will apply after your constant shift and will decide by how much to shift your constant value by.&lt;/p&gt;&lt;p&gt;e.g. Your constant shift is set to '2' which will shift your weights by 2 either forward or backward, and if your randomness is set to '3' it will choose a random integer between 0 and 3 to add or subtract from your constant shift.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="toolTipDuration">
+             <number>-1</number>
+            </property>
+            <property name="text">
+             <string>Random?</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="random_label">
+            <property name="text">
+             <string>Randomness:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="random_counter">
+            <property name="text">
+             <string>1</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="random_slider">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>10</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="constant_label">
+            <property name="text">
+             <string>Constant Shift:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="constant_counter">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="constant_slider">
+            <property name="minimum">
+             <number>-10</number>
+            </property>
+            <property name="maximum">
+             <number>10</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="drunk_checkbox_container">
+          <item>
+           <widget class="QCheckBox" name="variability_check">
+            <property name="toolTip">
+             <string>Constant variability determines whether your Constant Shift value will be randomly switched between positive and negative.</string>
+            </property>
+            <property name="text">
+             <string>Constant Variability?</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="perweight_check">
+            <property name="toolTip">
+             <string>Determines if the constant and random shifts should be rolled per weight.</string>
+            </property>
+            <property name="text">
+             <string>Per weight?</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="wrapping_check">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Integer wrapping will determine whether going past 24 will loop back to -24 and vice versa.&lt;/p&gt;&lt;p&gt;If disabled and you add 3 to a weight thats already at 24 for example nothing will change, same for subtracting from negative weights.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Integer wrapping?</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="video_label">
+        <property name="text">
+         <string>Video Settings</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <layout class="QHBoxLayout" name="video_settings_container">
+        <item>
+         <widget class="QLabel" name="size_label">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Size Constraint:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="size_spin">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>Leave about 10% buffer. ex: 9MB for 10MB maximum.</string>
+          </property>
+          <property name="suffix">
+           <string>MB</string>
+          </property>
+          <property name="maximum">
+           <number>999999999</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="encoder_label">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Encoder:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="encoder_combo">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>110</width>
+            <height>0</height>
+           </size>
+          </property>
+          <item>
+           <property name="text">
+            <string>VP9 (webm)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>H.264 (mp4)</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="downscaletext">
+      <property name="text">
+       <string>Downscale Factor</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QSlider" name="downscale_slider">
+      <property name="minimum">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <number>12</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+      <property name="invertedAppearance">
+       <bool>false</bool>
+      </property>
+      <property name="tickPosition">
+       <enum>QSlider::TickPosition::TicksAbove</enum>
+      </property>
+      <property name="tickInterval">
+       <number>1</number>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="bottomspacer">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="grayscalecontainer">
+      <item>
+       <widget class="QCheckBox" name="grayscale_box">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Convert to grayscale?</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="export_btn_container">
+      <item>
+       <widget class="QPushButton" name="export_png_btn">
+        <property name="text">
+         <string>Export PNG</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="export_jpg_btn">
+        <property name="text">
+         <string>Export JPG</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="export_video_btn">
+        <property name="text">
+         <string>Export Video</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QProgressBar" name="progress_bar">
+      <property name="value">
+       <number>0</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>rsliderfs</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>r_counter</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>232</x>
+     <y>504</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>191</x>
+     <y>505</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dsliderfs</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>d_counter</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>251</x>
+     <y>523</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>189</x>
+     <y>527</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dlsliderfs</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>dl_counter</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>476</x>
+     <y>505</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>431</x>
+     <y>504</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>drsliderfs</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>dr_counter</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>472</x>
+     <y>525</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>432</x>
+     <y>526</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>constant_slider</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>constant_counter</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>529</x>
+     <y>596</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>499</x>
+     <y>600</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>random_slider</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>random_counter</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>342</x>
+     <y>597</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>317</x>
+     <y>601</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>frame_slider</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>frame_counter</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>290</x>
+     <y>569</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>244</x>
+     <y>574</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

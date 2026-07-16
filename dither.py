@@ -6,6 +6,9 @@ from PIL import Image
 import numpy as np
 import numba
 
+# Local imports
+from resources import resource_path
+
 
 # Grayscale conversion function
 def apply_grayscale(image):
@@ -15,7 +18,7 @@ def apply_grayscale(image):
 # Helper function for Bayer matrix selection from list of predetermined arrays
 bayer_matrices = {}
 for size in (2, 4, 8, 16):
-    bayer_matrices[size] = np.load(f"matrices/bayer{size}x{size}.npy")
+    bayer_matrices[size] = np.load(resource_path(f"matrices/bayer{size}x{size}.npy"))
 
 
 # Function for getting a tiled Bayer matrix with caching
@@ -67,44 +70,59 @@ def apply_bayer_dithering(
     return upscaled
 
 
-# Numba JIT compiled Floyd-Steinberg dithering function (grayscale)
-@numba.njit
+# Grayscale Floyd-Steinberg dithering function
+@numba.njit(fastmath=True)
 def fs_dither_grayscale(dithered, width, height, r, dl, d, dr):
+    r_16 = r * 0.0625
+    dl_16 = dl * 0.0625
+    d_16 = d * 0.0625
+    dr_16 = dr * 0.0625
+
     for y in range(height):
         for x in range(width):
-            old_pixel = dithered[x, y]
-            new_pixel = np.round(old_pixel / 256) * 255
+            old_pixel = dithered[y, x]
+
+            new_pixel = np.round(old_pixel * 0.00390625) * 255.0
             error = old_pixel - new_pixel
-            dithered[x, y] = new_pixel
+            dithered[y, x] = new_pixel
+
             if x < width - 1:
-                dithered[x + 1, y] += error * d / 16
-            if y < height - 1 and x > 0:
-                dithered[x - 1, y + 1] += error * dl / 16
+                dithered[y, x + 1] += error * d_16
             if y < height - 1:
-                dithered[x, y + 1] += error * r / 16
-            if x < width - 1 and y < height - 1:
-                dithered[x + 1, y + 1] += error * dr / 16
+                if x > 0:
+                    dithered[y + 1, x - 1] += error * dl_16
+                dithered[y + 1, x] += error * r_16
+                if x < width - 1:
+                    dithered[y + 1, x + 1] += error * dr_16
+
     return dithered
 
 
-# Numba JIT compiled Floyd-Steinberg dithering function (rgb)
-@numba.njit
+# RGB version of the Floyd-Steinberg dithering function
+@numba.njit(fastmath=True)
 def fs_dither_rgb(dithered, width, height, channels, r, dl, d, dr):
-    for c in range(channels):
-        for y in range(height):
-            for x in range(width):
-                old_pixel = dithered[x, y, c]
-                new_pixel = np.round(old_pixel / 256) * 255
+    r_16 = r * 0.0625
+    dl_16 = dl * 0.0625
+    d_16 = d * 0.0625
+    dr_16 = dr * 0.0625
+
+    for y in range(height):
+        for x in range(width):
+            for c in range(channels):
+                old_pixel = dithered[y, x, c]
+                new_pixel = np.round(old_pixel * 0.00390625) * 255.0
                 error = old_pixel - new_pixel
-                dithered[x, y, c] = new_pixel
+                dithered[y, x, c] = new_pixel
+
                 if x < width - 1:
-                    dithered[x + 1, y, c] += error * d / 16
-                if y < height - 1 and x > 0:
-                    dithered[x - 1, y + 1, c] += error * dl / 16
+                    dithered[y, x + 1, c] += error * d_16
                 if y < height - 1:
-                    dithered[x, y + 1, c] += error * r / 16
-                if x < width - 1 and y < height - 1:
-                    dithered[x + 1, y + 1, c] += error * dr / 16
+                    if x > 0:
+                        dithered[y + 1, x - 1, c] += error * dl_16
+                    dithered[y + 1, x, c] += error * r_16
+                    if x < width - 1:
+                        dithered[y + 1, x + 1, c] += error * dr_16
+
     return dithered
 
 
@@ -117,19 +135,21 @@ def fs_dither(image: Image.Image, scale_factor, r, dl, d, dr) -> Image.Image:
         dithered = np.array(image.resize(small_size, resample=Image.NEAREST)).astype(
             np.float32
         )
+
         dithered = fs_dither_grayscale(
-            dithered, dithered.shape[0], dithered.shape[1], r, dl, d, dr
+            dithered, dithered.shape[1], dithered.shape[0], r, dl, d, dr
         )
         result = Image.fromarray(np.uint8(np.clip(dithered, 0, 255)))
+
     elif image.mode == "RGB":
         dithered = np.array(image.resize(small_size, resample=Image.NEAREST)).astype(
             np.float32
         )
         dithered = fs_dither_rgb(
             dithered,
-            dithered.shape[0],
-            dithered.shape[1],
-            dithered.shape[2],
+            dithered.shape[1],  # width
+            dithered.shape[0],  # height
+            dithered.shape[2],  # channels
             r,
             dl,
             d,
@@ -139,4 +159,25 @@ def fs_dither(image: Image.Image, scale_factor, r, dl, d, dr) -> Image.Image:
     else:
         raise ValueError("Image mode must be 'L' or 'RGB'.")
 
-    return result.resize((normalized_width, normalized_height), Image.NEAREST)
+    return result
+
+
+# Drunk dithering function
+def drunk(
+    image: Image.Image,
+    scale_factor,
+    r,
+    dl,
+    d,
+    dr,
+    drunkenness_level,
+    frames_per_shift=1,
+    randomness_enabled=False,
+    randomness=1,
+    constant_variability=False,
+    per_weight=False,
+    integer_wrapping=False,
+) -> Image.Image:
+    # Placeholder for the Drunk dithering algorithm
+    # Implement the actual algorithm here
+    return image  # Return the original image for now

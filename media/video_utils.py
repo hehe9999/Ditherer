@@ -2,15 +2,15 @@
 import cv2
 
 # Local imports
-from media.state import MediaState
+from media.state import media_state
 
 
-# Function for loading video files and updating the MediaState class
+# Function for loading video files and updating the media_state class
 def load_video(path):
-    MediaState.is_video = True
-    MediaState.path = path
-    MediaState.cap = cv2.VideoCapture(path)
-    if not MediaState.cap or not MediaState.cap.isOpened():
+    media_state.is_video = True
+    media_state.path = path
+    media_state.cap = cv2.VideoCapture(path)
+    if not media_state.cap or not media_state.cap.isOpened():
         raise ValueError("Unable to open video file")
-    MediaState.frame_rate = MediaState.cap.get(cv2.CAP_PROP_FPS)
-    MediaState.total_frames = int(MediaState.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    media_state.frame_rate = media_state.cap.get(cv2.CAP_PROP_FPS)
+    media_state.total_frames = int(media_state.cap.get(cv2.CAP_PROP_FRAME_COUNT))
