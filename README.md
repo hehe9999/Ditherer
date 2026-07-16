@@ -23,14 +23,15 @@
 This project is a Python-based dithering tool that can be used on a variety of media formats, including images and videos. It is designed to be easy to use and fun to play around with, and it is also a great way to learn about dithering, its uses, and how it works. My main goals with this project are to make something that is user-friendly, fun, and educational. This is also a tool for me to learn about Python, image and video manipulation, and to spend my free time in a fun and rewarding way. If you have any suggestions or feedback, please feel free to reach out!
 
 ## Features
-* Multiple dithering algorithms, each with their own settings
-* Ability to downscale image/frames before dithering
-* Grayscale output toggling
+* Multiple dithering algorithms — **Bayer** (ordered, with selectable matrix sizes), **Floyd-Steinberg** (error diffusion, with adjustable weights), and **Drunk** (error diffusion with extra randomization controls)
+* Optional downscaling before dithering
+* Grayscale output toggle
+* Video encoding with a choice of **H.264 (MP4)** or **VP9 (WebM)** and a target **size constraint**
 * CLI and GUI usage
 
 ## Usage
 ### As a standalone .exe:
-1. Download the latest release from the [releases page](https://github.com/hehe9999/Ditherer/releases). (Optional: verify the binary using the guide at [verify.md](/verify.md))
+1. Download the latest release from the [releases page](https://github.com/hehe9999/Ditherer/releases). (Optional: verify the binary using the guide at [docs/verify.md](docs/verify.md))
 2. Open the `.exe`.
 3. Import your media using the button at the top of the app.
 4. Choose a dithering algorithm from the dropdown.
@@ -51,9 +52,12 @@ This will process `testvideo.mp4` using the Floyd-Steinberg dithering algorithm 
 **This is one of many methods that are possible.**
 1. Clone this repo: `git clone https://github.com/hehe9999/Ditherer.git`
 2. Open **Command Prompt** in the directory, or navigate to it.
-3. Install the `requirements.txt` using `pip`. `pip install -r requirements.txt`
-4. Run your favorite Python compiler on `gui.py`, `pyinstaller` will be used in this example. `pyinstaller --onefile --noconsole gui.py`
-5. Run the `gui.exe` located in `\dist`.
+3. (Recommended) Create and activate a virtual environment, then install dependencies: `pip install -r requirements.txt`
+4. Build the GUI with [PyInstaller](https://pyinstaller.org/): `pyinstaller --onefile --noconsole --name dither gui_qt.py`
+   - The GUI loads its Qt layout (`ui.ui`) and Bayer matrices at runtime, so bundle them for a portable build: `--add-data "ui.ui;." --add-data "matrices;matrices"`
+5. Run the `dither.exe` located in `\\dist`.
+
+> **The GUI is built with [PySide6](https://doc.qt.io/qtforpython/) (a PyQt-compatible binding).** The old `customtkinter`-based `gui.py` has been retired.
 
 
 
@@ -65,9 +69,9 @@ This will process `testvideo.mp4` using the Floyd-Steinberg dithering algorithm 
 
 > **For video files, you will need to install [FFmpeg](https://www.ffmpeg.org/), I recommend using [chocolatey](https://chocolatey.org/) to do this. You can do this by running `choco install ffmpeg` in your command prompt after chocolatey is installed.**
 
-> **When processing videos, Bayer dithering is recommended. Floyd-Steinberg outputs are extremely large and often bitrate-starved.**
+> **Video encoders:** the GUI lets you choose between **H.264 (MP4)** and **VP9 (WebM)**. The **size constraint** field caps the output to a target file size (great for Discord/embed limits) — the encoder adapts its bitrate to fit. The CLI currently always outputs **VP9/WebM**.
 
- **All video outputs are encoded in [VP9](https://en.wikipedia.org/wiki/VP9) and use the [WebM](https://en.wikipedia.org/wiki/WebM) container - this ensures compatibility with Discord embeds and keeps file sizes manageable.**
+> **Dithering detail:** Floyd-Steinberg and Drunk are error-diffusion (high-frequency) algorithms; the exporter uses constant-quality encoding by default and 2-pass rate control when a size constraint is set, so busy frames keep the bitrate they need. Bayer stays crisp at lower bitrates if you want the smallest files.
 
 
 
@@ -84,9 +88,9 @@ This project is licensed under the [MIT License](/LICENSE).
 
 ---
 
-**To see the newest additions to the program, check out the [changelog](/changelog.md).**
+**To see the newest additions to the program, check out the [changelog](docs/changelog.md).**
 
-**To see what I'm currently working on, and what I have planned for the future of this project, check the [todo list](/todo.md).**
+**To see what I'm currently working on, and what I have planned for the future of this project, check the [todo list](docs/todo.md).**
 
 ### Please check out the [original repository](https://github.com/MOPHEADART/Ditherer)!
 
